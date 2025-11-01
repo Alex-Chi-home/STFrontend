@@ -33,7 +33,7 @@ export default function Home() {
     });
   }
 
-  // const handleEditMessage = (message: Message) => {
+  // const handleEditMessage = (message: Message) => { test!
   //   // In a real app, you would implement the edit functionality here
   //   // For example, open a modal or inline edit form
   //   console.warn("Edit message:", message.text);
