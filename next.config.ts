@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/:path*", // фронтенд будет обращаться к /api/...
-        destination: "http://10.90.15.41:5555/api/:path*", // прокси на HTTP API
+        source: "/api/:path*",
+        destination: "http://10.90.15.41:5555/api/:path*",
       },
     ];
   },
