@@ -13,7 +13,7 @@ import Link from "next/link";
 import { getUsersAPI } from "@/lib/api/users";
 
 export default function Sidebar() {
-  const { user, logout } = useUserStore();
+  const { user } = useUserStore();
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
 
