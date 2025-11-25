@@ -46,6 +46,7 @@ async function request(endpoint: string, options: RequestOptions = {}) {
   const requestHeaders = new Headers({
     ...headers,
     Accept: "application/json",
+    "ngrok-skip-browser-warning": "true",
   });
 
   if (!isFormData) {
