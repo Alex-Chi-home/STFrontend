@@ -10,10 +10,9 @@ import { useUserStore } from "@/lib/store/user";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { getUsersAPI } from "@/lib/api/users";
 
 export default function Sidebar() {
-  const { user } = useUserStore();
+  const { user, logout } = useUserStore();
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
 
@@ -25,11 +24,6 @@ export default function Sidebar() {
     { name: "Chats", icon: FaceIcon, path: "/" },
     { name: "Profile", icon: ImageIcon, path: "/profile" },
   ];
-
-   function getUsers() {
-         getUsersAPI();
-      }
-  
 
   return (
     <>
@@ -96,8 +90,7 @@ export default function Sidebar() {
             })}
             <li
               className="flex items-center p-2 hover:bg-gray-200 rounded cursor-pointer text-red-600"
-              // onClick={logout}
-              onClick={getUsers}
+              onClick={logout}
             >
               <ExitIcon className="w-5 h-5 mr-2" />
               <span>Logout</span>
