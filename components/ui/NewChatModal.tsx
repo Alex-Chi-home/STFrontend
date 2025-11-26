@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { getUsersAPI } from "@/lib/api/users";
 import { ChatType, User } from "@/lib/types";
@@ -163,10 +164,12 @@ export default function NewChatModal({
             >
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
                 {user?.avatarUrl ? (
-                  <img
+                  <Image
                     src={user.avatarUrl}
                     alt={user.username}
-                    className="w-full h-full rounded-full"
+                    width={32}
+                    height={32}
+                    className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
                   <span className="text-gray-600">{user.username[0]}</span>
