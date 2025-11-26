@@ -56,13 +56,15 @@ export function useAuthToken(): string | null {
 
     const fetchToken = async () => {
       try {
+        console.log("[WebSocket Auth] Fetching token...");
         const tokenValue = await getWebSocketTokenAction();
+        console.log("[WebSocket Auth] Token received:", tokenValue ? `${tokenValue.slice(0, 20)}...` : "null");
         if (isMounted) {
           setToken(tokenValue);
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("[WebSocket] Failed to get auth token:", error);
+        console.error("[WebSocket Auth] Failed to get auth token:", error);
         if (isMounted) {
           setToken(null);
           setIsLoading(false);
@@ -76,6 +78,10 @@ export function useAuthToken(): string | null {
       isMounted = false;
     };
   }, []);
+
+  if (isLoading) {
+    console.log("[WebSocket Auth] Still loading token...");
+  }
 
   return token;
 }

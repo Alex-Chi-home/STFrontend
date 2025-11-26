@@ -14,11 +14,31 @@ import {
 type EventCallback = (...args: unknown[]) => void;
 
 const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:5555";
-const isDevelopment = process.env.NODE_ENV === "development";
 
-// Debug logger that only logs in development
-// eslint-disable-next-line no-console
-const debugLog = isDevelopment ? console.log.bind(console) : () => {};
+// Check if debug mode is enabled
+const isDebugEnabled = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const urlParams = new URLSearchParams(window.location.search);
+  return (
+    localStorage.getItem("ws_debug") === "true" ||
+    urlParams.get("ws_debug") === "true" ||
+    process.env.NODE_ENV === "development"
+  );
+};
+
+// Logger - always log errors, other logs only in debug mode
+const wsLog = (message: string, data?: unknown) => {
+  if (!isDebugEnabled()) return;
+  const ts = new Date().toISOString().slice(11, 23);
+  // eslint-disable-next-line no-console
+  console.log(`[WS ${ts}] ${message}`, data ?? "");
+};
+
+const wsError = (message: string, error?: unknown) => {
+  const ts = new Date().toISOString().slice(11, 23);
+  // eslint-disable-next-line no-console
+  console.error(`[WS ${ts}] ❌ ${message}`, error ?? "");
+};
 
 class WebSocketService {
   private static instance: WebSocketService | null = null;
@@ -45,7 +65,7 @@ class WebSocketService {
   private setStatus(status: ConnectionStatus): void {
     this._status = status;
     this.statusListeners.forEach((listener) => listener(status));
-    debugLog(`[WebSocket] Status: ${status}`);
+    wsLog(`Status: ${status}`);
   }
 
   public onStatusChange(callback: (status: ConnectionStatus) => void): () => void {
@@ -54,8 +74,14 @@ class WebSocketService {
   }
 
   public connect(token: string): void {
+    // Always log connection attempts (even in prod)
+    // eslint-disable-next-line no-console
+    console.log(`[WS] Connecting to: ${WEBSOCKET_URL}`);
+    // eslint-disable-next-line no-console
+    console.log(`[WS] Token: ${token ? token.slice(0, 20) + "..." : "NULL"}`);
+
     if (this.socket?.connected) {
-      debugLog("[WebSocket] Already connected");
+      wsLog("Already connected");
       return;
     }
 
@@ -82,7 +108,8 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on("connect", () => {
-      debugLog("[WebSocket] ✅ Connected:", this.socket?.id);
+      // eslint-disable-next-line no-console
+      console.log("[WS] ✅ Connected! Socket ID:", this.socket?.id);
       this.setStatus("connected");
       this.joinedChats.forEach((chatId) => {
         this.socket?.emit(ClientEvents.JOIN_CHAT, chatId);
@@ -90,22 +117,22 @@ class WebSocketService {
     });
 
     this.socket.on("disconnect", (reason) => {
-      debugLog("[WebSocket] ❌ Disconnected:", reason);
+      wsError(`Disconnected: ${reason}`);
       this.setStatus("disconnected");
     });
 
     this.socket.io.on("reconnect_attempt", (attempt) => {
-      debugLog("[WebSocket] 🔄 Reconnecting... Attempt:", attempt);
+      wsLog(`🔄 Reconnecting... Attempt: ${attempt}`);
       this.setStatus("reconnecting");
     });
 
     this.socket.io.on("reconnect", () => {
-      debugLog("[WebSocket] ✅ Reconnected");
+      wsLog("✅ Reconnected");
       this.setStatus("connected");
     });
 
     this.socket.on("connect_error", (error) => {
-      console.error("[WebSocket] ❌ Connection error:", error.message);
+      wsError("Connection error", { message: error.message, cause: error.cause });
       this.setStatus("disconnected");
     });
   }
@@ -115,7 +142,7 @@ class WebSocketService {
 
     Object.values(ServerEvents).forEach((event) => {
       this.socket?.on(event as keyof ServerToClientEvents, (data: unknown) => {
-        debugLog(`[WebSocket] 📨 ${event}:`, data);
+        wsLog(`📨 ${event}:`, data);
         this.emit(event, data);
       });
     });
@@ -130,7 +157,7 @@ class WebSocketService {
     this.typingTimeouts.forEach((timeout) => clearTimeout(timeout));
     this.typingTimeouts.clear();
     this.setStatus("disconnected");
-    debugLog("[WebSocket] Disconnected and cleaned up");
+    wsLog("Disconnected and cleaned up");
   }
 
   public isConnected(): boolean {
@@ -155,23 +182,23 @@ class WebSocketService {
       try {
         callback(data);
       } catch (error) {
-        console.error(`[WebSocket] Error in listener for ${event}:`, error);
+        wsError(`Error in listener for ${event}`, error);
       }
     });
   }
 
   public joinChat(chatId: number): void {
     if (!this.socket?.connected) {
-      debugLog("[WebSocket] Cannot join chat - not connected");
+      wsLog(`Cannot join chat ${chatId} - not connected`);
       return;
     }
     if (this.joinedChats.has(chatId)) {
-      debugLog("[WebSocket] Already joined chat:", chatId);
+      wsLog(`Already joined chat: ${chatId}`);
       return;
     }
     this.socket.emit(ClientEvents.JOIN_CHAT, chatId);
     this.joinedChats.add(chatId);
-    debugLog("[WebSocket] Joined chat:", chatId);
+    wsLog(`Joined chat: ${chatId}`);
   }
 
   public leaveChat(chatId: number): void {
@@ -181,7 +208,7 @@ class WebSocketService {
     this.socket.emit(ClientEvents.LEAVE_CHAT, chatId);
     this.joinedChats.delete(chatId);
     this.stopTyping(chatId);
-    debugLog("[WebSocket] Left chat:", chatId);
+    wsLog(`Left chat: ${chatId}`);
   }
 
   public startTyping(chatId: number): void {
@@ -191,10 +218,9 @@ class WebSocketService {
     if (existingTimeout) {
       clearTimeout(existingTimeout);
     } else {
-
       const payload: TypingPayload = { chatId };
       this.socket.emit(ClientEvents.TYPING_START, payload);
-      debugLog("[WebSocket] Started typing in chat:", chatId);
+      wsLog(`Started typing in chat: ${chatId}`);
     }
 
     const timeout = setTimeout(() => {
@@ -212,18 +238,17 @@ class WebSocketService {
       if (this.socket?.connected) {
         const payload: TypingPayload = { chatId };
         this.socket.emit(ClientEvents.TYPING_STOP, payload);
-        debugLog("[WebSocket] Stopped typing in chat:", chatId);
+        wsLog(`Stopped typing in chat: ${chatId}`);
       }
     }
   }
-
 
   public markMessageRead(messageId: number, chatId: number): void {
     if (!this.socket?.connected) return;
 
     const payload: MessageReadPayload = { messageId, chatId };
     this.socket.emit(ClientEvents.MESSAGE_READ, payload);
-    debugLog("[WebSocket] Marked message as read:", messageId);
+    wsLog(`Marked message ${messageId} as read`);
   }
 
   public getSocket(): Socket<ServerToClientEvents, ClientToServerEvents> | null {
