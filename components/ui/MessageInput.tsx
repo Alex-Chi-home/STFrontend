@@ -1,17 +1,21 @@
 import { Message } from "@/lib/types";
 import { Dispatch, RefObject, SetStateAction } from "react";
 
+interface MessageInputProps {
+  setNewMessage: (text: string, id: number | null) => void;
+  message: Message;
+  setMessage: Dispatch<SetStateAction<{ content: string; id: number | null }>>;
+  ref: RefObject<HTMLInputElement | null>;
+  onTyping?: () => void;
+}
+
 export default function MessageInput({
   setNewMessage,
   message,
   setMessage,
   ref,
-}: {
-  setNewMessage: (text: string, id: number | null) => void;
-  message: Message;
-  setMessage: Dispatch<SetStateAction<{ content: string; id: number | null }>>;
-  ref: RefObject<HTMLInputElement | null>;
-}) {
+  onTyping,
+}: MessageInputProps) {
   const handleSend = () => {
     if (message.content.trim()) {
       setNewMessage(message.content, message.id);
@@ -25,6 +29,12 @@ export default function MessageInput({
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage((prev) => ({ ...prev, content: e.target.value }));
+    // Trigger typing indicator on input
+    onTyping?.();
+  };
+
   return (
     <div className="p-4">
       <div className="flex items-center space-x-2">
@@ -32,9 +42,7 @@ export default function MessageInput({
           ref={ref}
           type="text"
           value={message.content}
-          onChange={(e) =>
-            setMessage((prev) => ({ ...prev, content: e.target.value }))
-          }
+          onChange={handleChange}
           onKeyDown={onKeyDown}
           placeholder="Type a message..."
           autoComplete="off"

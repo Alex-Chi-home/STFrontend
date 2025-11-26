@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ChatList from "@/components/ui/ChatList";
 import ChatWindow from "@/components/ui/ChatWindow";
 import { Chat, ChatType, Message, User } from "@/lib/types";
 import { useUserStore } from "@/lib/store/user";
-// import { ChatSkeleton } from "@/components/ui/skeletons/ChatSkeleton";
 import {
   createGroupChatAPI,
   createPrivateChatAPI,
@@ -13,31 +12,105 @@ import {
 import { getMessagesAPI, sendMessageAPI } from "@/lib/api/messages";
 import { deleteMessageAPI } from "../lib/api/messages";
 import NewChatModal from "@/components/ui/NewChatModal";
+import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
+import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
+import { useWebSocketStore } from "@/lib/websocket/store";
+import ConnectionStatus from "@/components/ui/ConnectionStatus";
 
-export default function Home() {
+function ChatContent() {
   const { user } = useUserStore();
   const [mbIsSelected, setMbIsSelected] = useState(false);
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
+  const { incrementUnread, setCurrentChatId } = useWebSocketStore();
+
+  // WebSocket event handlers
+  const handleNewMessage = useCallback(
+    (message: Message) => {
+      // Only add message to current chat if it belongs there
+      if (message.chat_id === activeChatId) {
+        setMessages((prev) => {
+          // Prevent duplicates
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+      } else if (message.chat_id) {
+        // Increment unread count for other chats
+        incrementUnread(message.chat_id);
+      }
+    },
+    [activeChatId, incrementUnread]
+  );
+
+  const handleMessageDeleted = useCallback(
+    (payload: { chatId: number; messageId: number }) => {
+      if (payload.chatId === activeChatId) {
+        setMessages((prev) => prev.filter((m) => m.id !== payload.messageId));
+      }
+    },
+    [activeChatId]
+  );
+
+  const handleNewChat = useCallback((chat: Chat) => {
+    setChats((prev) => {
+      if (prev.some((c) => c.id === chat.id)) return prev;
+      return [...prev, chat];
+    });
+  }, []);
+
+  const handleChatDeleted = useCallback(
+    (payload: { chatId: number }) => {
+      setChats((prev) => prev.filter((c) => c.id !== payload.chatId));
+      if (activeChatId === payload.chatId) {
+        setActiveChatId(null);
+        setMessages([]);
+      }
+    },
+    [activeChatId]
+  );
+
+  // Subscribe to WebSocket events
+  useMessageEvents(handleNewMessage, handleMessageDeleted);
+  useChatEvents(handleNewChat, handleChatDeleted);
+
+  // Update current chat ID in store
+  useEffect(() => {
+    setCurrentChatId(activeChatId);
+  }, [activeChatId, setCurrentChatId]);
 
   function setNewMessage(content: string) {
     if (!activeChatId) return;
-    const message = {
+
+    // Optimistic update: add message immediately with temp ID
+    const tempMessage: Message = {
+      id: -Date.now(), // Negative ID for temp messages
+      chat_id: activeChatId,
+      content,
+      sender_id: user?.id || undefined,
+      sent_at: new Date().toISOString(),
+      sender: user || undefined,
+    };
+    setMessages((prev) => [...prev, tempMessage]);
+
+    const messagePayload = {
       chatId: activeChatId,
       content,
     };
-    sendMessageAPI(message).then((res) => {
-      if (res) setMessages((prev) => [...prev, res]);
+
+    sendMessageAPI(messagePayload).then((res) => {
+      if (res) {
+        // Replace temp message with real one
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempMessage.id ? res : m))
+        );
+      } else {
+        // Remove temp message on error
+        setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
+      }
     });
   }
-
-  // const handleEditMessage = (message: Message) => {
-  //   // In a real app, you would implement the edit functionality here
-  //   // For example, open a modal or inline edit form
-  //   console.warn("Edit message:", message.text);
-  // };
 
   const handleCreateChat = (
     selectedUsers: User[],
@@ -53,7 +126,7 @@ export default function Home() {
       });
     }
     if (chatType === ChatType.Group && groupName) {
-      const memberIds = selectedUsers.map((user) => Number(user.id));
+      const memberIds = selectedUsers.map((u) => Number(u.id));
       createGroupChatAPI({ name: groupName, memberIds });
     }
     setIsNewChatModalOpen(false);
@@ -80,9 +153,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    async function getMessages(activeChatId: number) {
-      const messagesData = await getMessagesAPI(activeChatId);
-
+    async function getMessages(chatId: number) {
+      const messagesData = await getMessagesAPI(chatId);
       setMessages(messagesData || []);
     }
     if (activeChatId) {
@@ -93,14 +165,11 @@ export default function Home() {
   function onMbBack() {
     setMbIsSelected(true);
   }
+
   function onSetActiveChat(activeChat: number) {
     setMbIsSelected(false);
     setActiveChatId(activeChat);
   }
-
-  // if (!user?.id) {
-  //   return <ChatSkeleton />;
-  // }
 
   return (
     <div className="flex h-full">
@@ -116,9 +185,9 @@ export default function Home() {
       {!mbIsSelected ? (
         <ChatWindow
           userId={user?.id || null}
+          chatId={activeChatId}
           messages={messages}
           setNewMessage={setNewMessage}
-          // handleEditMessage={handleEditMessage}
           handleDeleteMessage={handleDeleteMessage}
           onMBBack={onMbBack}
         />
@@ -128,8 +197,22 @@ export default function Home() {
         isOpen={isNewChatModalOpen}
         onClose={() => setIsNewChatModalOpen(false)}
         onCreateChat={handleCreateChat}
-        // availableUsers={availableUsers}
       />
+
+      {/* Connection status indicator */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ConnectionStatus showLabel={true} />
+      </div>
     </div>
+  );
+}
+
+export default function Home() {
+  const token = useAuthToken();
+
+  return (
+    <WebSocketProvider token={token}>
+      <ChatContent />
+    </WebSocketProvider>
   );
 }
