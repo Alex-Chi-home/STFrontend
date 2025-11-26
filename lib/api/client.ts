@@ -2,9 +2,12 @@
 
 import { getAuthTokenAction } from "./utils";
 
+// In production, use relative path to go through Vercel rewrites
+// This ensures cookies are set on the same domain
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:5555/api";
+  typeof window !== "undefined" && process.env.NODE_ENV === "production"
+    ? "/api"
+    : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555/api");
 
 type RequestOptions = RequestInit & {
   isFormData?: boolean;
