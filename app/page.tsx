@@ -29,6 +29,7 @@ function ChatContent() {
   // WebSocket event handlers
   const handleNewMessage = useCallback(
     (message: Message) => {
+      // eslint-disable-next-line no-console
       console.log('handle new message ! from websocket', message)
       // Only add message to current chat if it belongs there
       if (message.chat_id === activeChatId) {
@@ -122,6 +123,7 @@ function ChatContent() {
     if (chatType === ChatType.Private && selectedUsers[0].id) {
       const otherUserId = +selectedUsers[0].id;
       createPrivateChatAPI({ otherUserId }).then((res) => {
+        // eslint-disable-next-line no-console
         console.log(res, 'create chat res')
         // if (res) { prevent duplicate from socket
         //   setChats((prev) => [...prev, res]);
