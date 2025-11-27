@@ -33,12 +33,12 @@ function ChatContent() {
       console.log('handle new message ! from websocket', message)
       // Only add message to current chat if it belongs there
       if (message.chat_id === activeChatId) {
-        // setMessages((prev) => {
-        //   // Prevent duplicates
-        //   console.log(prev.some((m) => m.id === message.id), 'IS DUPLICATE')
-        //   if (prev.some((m) => m.id === message.id)) return prev;
-        //   return [...prev, message];
-        // });
+        setMessages((prev) => {
+          // Prevent duplicates
+          console.log(prev.some((m) => m.id === message.id), 'IS DUPLICATE')
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
       } else if (message.chat_id) {
         // Increment unread count for other chats
         incrementUnread(message.chat_id);
@@ -95,7 +95,7 @@ function ChatContent() {
       sent_at: new Date().toISOString(),
       sender: user || undefined,
     };
-    // setMessages((prev) => [...prev, tempMessage]); for more quick intrct
+    setMessages((prev) => [...prev, tempMessage]);
 
     const messagePayload = {
       chatId: activeChatId,
@@ -104,10 +104,10 @@ function ChatContent() {
 
     sendMessageAPI(messagePayload).then((res) => {
       if (res) {
-        // Replace temp message with real one NOT WORKING IF HAVENT TEMP MESSAGE
-        // setMessages((prev) =>
-        //   prev.map((m) => (m.id === tempMessage.id ? res : m))
-        // );
+    
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempMessage.id ? res : m))
+        );
       } else {
         // Remove temp message on error
         setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
@@ -125,9 +125,9 @@ function ChatContent() {
       createPrivateChatAPI({ otherUserId }).then((res) => {
         // eslint-disable-next-line no-console
         console.log(res, 'create chat res')
-        // if (res) { prevent duplicate from socket
-        //   setChats((prev) => [...prev, res]);
-        // }
+        if (res) {
+          setChats((prev) => [...prev, res]);
+        }
       });
     }
     if (chatType === ChatType.Group && groupName) {
