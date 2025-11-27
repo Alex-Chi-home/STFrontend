@@ -35,7 +35,6 @@ function ChatContent() {
       if (message.chat_id === activeChatId) {
         setMessages((prev) => {
           // Prevent duplicates
-          console.log(prev.some((m) => m.id === message.id), 'IS DUPLICATE')
           if (prev.some((m) => m.id === message.id)) return prev;
           return [...prev, message];
         });
