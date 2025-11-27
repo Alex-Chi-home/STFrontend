@@ -29,12 +29,9 @@ function ChatContent() {
   // WebSocket event handlers
   const handleNewMessage = useCallback(
     (message: Message) => {
-      // eslint-disable-next-line no-console
-      console.log('handle new message ! from websocket', message)
-      // Only add message to current chat if it belongs there
+
       if (message.chat_id === activeChatId) {
         setMessages((prev) => {
-          // Prevent duplicates
           if (prev.some((m) => m.id === message.id)) return prev;
           return [...prev, message];
         });
@@ -73,11 +70,9 @@ function ChatContent() {
     [activeChatId]
   );
 
-  // Subscribe to WebSocket events
   useMessageEvents(handleNewMessage, handleMessageDeleted);
   useChatEvents(handleNewChat, handleChatDeleted);
 
-  // Update current chat ID in store
   useEffect(() => {
     setCurrentChatId(activeChatId);
   }, [activeChatId, setCurrentChatId]);
@@ -85,16 +80,16 @@ function ChatContent() {
   function setNewMessage(content: string) {
     if (!activeChatId) return;
 
-    // Optimistic update: add message immediately with temp ID
+    // Optimistic update: NOT NESSESARY NEED TEST
     const tempMessage: Message = {
-      id: -Date.now(), // Negative ID for temp messages
+      id: -Date.now(), // !!!
       chat_id: activeChatId,
       content,
       sender_id: user?.id || undefined,
       sent_at: new Date().toISOString(),
       sender: user || undefined,
     };
-    setMessages((prev) => [...prev, tempMessage]);
+    // setMessages((prev) => [...prev, tempMessage]);  OLD LOGIC NEED REMOVE INVOCE DUPLICATES
 
     const messagePayload = {
       chatId: activeChatId,
@@ -103,12 +98,10 @@ function ChatContent() {
 
     sendMessageAPI(messagePayload).then((res) => {
       if (res) {
-    
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempMessage.id ? res : m))
-        );
+        // setMessages((prev) =>
+        // [...prev, res]
+        // ); OLD LOGIC ! NEED REMOVE
       } else {
-        // Remove temp message on error
         setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
       }
     });
