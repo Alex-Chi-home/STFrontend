@@ -122,6 +122,7 @@ function ChatContent() {
     if (chatType === ChatType.Private && selectedUsers[0].id) {
       const otherUserId = +selectedUsers[0].id;
       createPrivateChatAPI({ otherUserId }).then((res) => {
+        console.log(res, 'create chat res')
         // if (res) { prevent duplicate from socket
         //   setChats((prev) => [...prev, res]);
         // }
