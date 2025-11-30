@@ -1,6 +1,10 @@
+"use client";
+
 import { deleteGroupChatAPI } from "@/lib/api/chats";
 import { Chat } from "@/lib/types";
-import { TrashIcon } from "@radix-ui/react-icons";
+import { FramerLogoIcon } from "@radix-ui/react-icons";
+import { useEffect, useRef, useState } from "react";
+import ChatContextMenue from "./ChatContextMenue";
 
 export default function ChatList({
   chats = [],
@@ -13,9 +17,43 @@ export default function ChatList({
   setActiveChat: (activeChat: number) => void;
   onAddNewChat: () => void;
 }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const chatItemRef = useRef<HTMLDivElement>(null);
+
   function handleDelete(chatId: number) {
     deleteGroupChatAPI(`${chatId}`);
+    setShowMenu(false);
   }
+
+  const handleRightClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const x = e.clientX;
+    const y = e.clientY;
+    e.preventDefault();
+    setPosition({ x, y: y - 10 });
+    setShowMenu(true);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        chatItemRef.current &&
+        !chatItemRef.current.contains(event.target as Node)
+      ) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="w-80 bg-gray-50 border-r border-gray-200 h-[100dvh] sm:h-full flex flex-col relative">
@@ -29,19 +67,24 @@ export default function ChatList({
         {chats.map((chat) => (
           <div
             key={chat.id}
+            ref={chatItemRef}
             className={`p-4 flex ${
               activeChat === chat.id
                 ? "bg-blue-500 text-white"
                 : "bg-gray-50 hover:bg-gray-100 cursor-pointer"
             } border-b border-gray-200`}
+            onContextMenu={handleRightClick}
           >
             <div
               onClick={() => setActiveChat(chat.id)}
               className="flex items-center justify-between"
             >
-              <div>
-                <h3 className="text-base font-medium">
-                  {chat.name || "Private chat " + chat.id}
+              <div className="flex gap-1">
+                {chat.chat_type === "group" && (
+                  <FramerLogoIcon className="w-5 h-5" />
+                )}
+                <h3 className="text-base font-bold">
+                  {chat.name || "Chat " + chat.id}
                 </h3>
                 <p
                   className={`text-sm ${
@@ -51,14 +94,14 @@ export default function ChatList({
               </div>
               <span className="text-xs text-gray-400">{chat.updated_at}</span>
             </div>
-            <button
-              onClick={() => handleDelete(chat.id)}
-              className="w-full cursor-pointer text-sm  text-red-600 flex items-center gap-2  p-2 hover:bg-gray-200 rounded-md transition-colors"
-              title="Delete message"
-            >
-              <TrashIcon className="w-4 h-4 " />
-              Delete
-            </button>
+            {showMenu && (
+              <ChatContextMenue
+                // handleEdit={handleEdit}
+                handleDelete={() => handleDelete(chat.id)}
+                menuRef={menuRef}
+                position={position}
+              />
+            )}
           </div>
         ))}
       </div>

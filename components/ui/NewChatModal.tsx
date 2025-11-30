@@ -42,18 +42,14 @@ export default function NewChatModal({
   }, []);
 
   const handleCreateChat = () => {
-    const users = [...selectedUsers]
+    const users = [...selectedUsers];
     if (chatType === "private" && selectedUsers.length !== 1) {
-      return; // Need exactly one user for private chat
+      return;
     }
     if (chatType === "group" && (!selectedUsers.length || !groupName)) {
-      return; // Need at least one user and a group name for group chat
+      return;
     }
-    onCreateChat(
-      users,
-      chatType,
-      chatType === "group" ? groupName : undefined
-    );
+    onCreateChat(users, chatType, chatType === "group" ? groupName : undefined);
     resetForm();
   };
 

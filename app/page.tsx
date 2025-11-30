@@ -29,14 +29,12 @@ function ChatContent() {
   // WebSocket event handlers
   const handleNewMessage = useCallback(
     (message: Message) => {
-
       if (message.chat_id === activeChatId) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === message.id)) return prev;
           return [...prev, message];
         });
       } else if (message.chat_id) {
-        // Increment unread count for other chats
         incrementUnread(message.chat_id);
       }
     },
@@ -57,6 +55,7 @@ function ChatContent() {
       if (prev.some((c) => c.id === chat.id)) return prev;
       return [...prev, chat];
     });
+    setActiveChatId(chat.id);
   }, []);
 
   const handleChatDeleted = useCallback(
@@ -114,13 +113,7 @@ function ChatContent() {
   ) => {
     if (chatType === ChatType.Private && selectedUsers[0].id) {
       const otherUserId = +selectedUsers[0].id;
-      createPrivateChatAPI({ otherUserId }).then((res) => {
-        // eslint-disable-next-line no-console
-        console.log(res, 'create chat res')
-        if (res) {
-          setChats((prev) => [...prev, res]);
-        }
-      });
+      createPrivateChatAPI({ otherUserId });
     }
     if (chatType === ChatType.Group && groupName) {
       const memberIds = selectedUsers.map((u) => Number(u.id));
