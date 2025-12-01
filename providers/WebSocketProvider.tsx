@@ -28,19 +28,16 @@ export function useWebSocket() {
 interface WebSocketProviderProps {
   children: React.ReactNode;
   token: string | null;
-  showConnectionBanner?: boolean;
 }
 
 export default function WebSocketProvider({
   children,
   token,
-  showConnectionBanner = true,
 }: WebSocketProviderProps) {
   const connection = useWebSocketConnection(token);
 
   return (
     <WebSocketContext.Provider value={connection}>
-      {showConnectionBanner && <ConnectionBanner />}
       {children}
     </WebSocketContext.Provider>
   );

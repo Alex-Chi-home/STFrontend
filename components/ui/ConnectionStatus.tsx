@@ -36,7 +36,7 @@ interface ConnectionStatusProps {
 }
 
 export default function ConnectionStatus({
-  showLabel = true,
+  showLabel = false,
   className = "",
 }: ConnectionStatusProps) {
   const { status } = useWebSocketStore();

@@ -15,7 +15,6 @@ import NewChatModal from "@/components/ui/NewChatModal";
 import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
 import { useWebSocketStore } from "@/lib/websocket/store";
-import ConnectionStatus from "@/components/ui/ConnectionStatus";
 
 function ChatContent() {
   const { user } = useUserStore();
@@ -188,11 +187,6 @@ function ChatContent() {
         onClose={() => setIsNewChatModalOpen(false)}
         onCreateChat={handleCreateChat}
       />
-
-      {/* Connection status indicator */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <ConnectionStatus showLabel={true} />
-      </div>
     </div>
   );
 }
