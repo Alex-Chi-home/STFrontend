@@ -173,6 +173,7 @@ function ChatContent() {
 
       {!mbIsSelected ? (
         <ChatWindow
+          activeChat={activeChatId}
           userId={user?.id || null}
           chatId={activeChatId}
           messages={messages}
