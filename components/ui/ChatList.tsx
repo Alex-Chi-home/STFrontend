@@ -3,8 +3,10 @@
 import { deleteGroupChatAPI } from "@/lib/api/chats";
 import { Chat } from "@/lib/types";
 import { FramerLogoIcon } from "@radix-ui/react-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import ChatContextMenue from "./ChatContextMenue";
+
+const LONG_PRESS_DURATION = 500; // ms
 
 export default function ChatList({
   chats = [],
@@ -19,26 +21,71 @@ export default function ChatList({
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const chatItemRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
 
   function handleDelete(chatId: number) {
     deleteGroupChatAPI(`${chatId}`);
     setShowMenu(false);
+    setSelectedChatId(null);
   }
 
-  const handleRightClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const x = e.clientX;
-    const y = e.clientY;
+  // Desktop: right-click
+  const handleRightClick = (e: React.MouseEvent<HTMLDivElement>, chatId: number) => {
     e.preventDefault();
-    setPosition({ x, y: y - 10 });
+    setPosition({ x: e.clientX, y: e.clientY - 10 });
+    setSelectedChatId(chatId);
     setShowMenu(true);
   };
 
+  // Mobile: long press start
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>, chatId: number) => {
+    isLongPress.current = false;
+    const touch = e.touches[0];
+
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+      setPosition({ x: touch.clientX, y: touch.clientY - 10 });
+      setSelectedChatId(chatId);
+      setShowMenu(true);
+      // Вибрация на iOS/Android если поддерживается
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, LONG_PRESS_DURATION);
+  }, []);
+
+  // Mobile: long press end
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  // Mobile: cancel on move (prevents triggering while scrolling)
+  const handleTouchMove = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  // Handle click - only trigger if not a long press
+  const handleClick = useCallback((chatId: number) => {
+    if (!isLongPress.current) {
+      setActiveChat(chatId);
+    }
+    isLongPress.current = false;
+  }, [setActiveChat]);
+
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: globalThis.MouseEvent) => {
+    const handleClickOutside = (event: globalThis.MouseEvent | TouchEvent) => {
       if (
         menuRef.current &&
         !menuRef.current.contains(event.target as Node) &&
@@ -46,12 +93,15 @@ export default function ChatList({
         !chatItemRef.current.contains(event.target as Node)
       ) {
         setShowMenu(false);
+        setSelectedChatId(null);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
 
@@ -73,10 +123,16 @@ export default function ChatList({
                 ? "bg-blue-500 text-white"
                 : "bg-gray-50 hover:bg-gray-100 cursor-pointer"
             } border-b border-gray-200`}
-            onContextMenu={handleRightClick}
+            // Desktop: right-click
+            onContextMenu={(e) => handleRightClick(e, chat.id)}
+            // Mobile: long press
+            onTouchStart={(e) => handleTouchStart(e, chat.id)}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchMove}
+            // Click (but not after long press)
+            onClick={() => handleClick(chat.id)}
           >
             <div
-              onClick={() => setActiveChat(chat.id)}
               className="flex items-center justify-between"
             >
               <div className="flex gap-1">
@@ -94,7 +150,7 @@ export default function ChatList({
               </div>
               <span className="text-xs text-gray-400">{chat.updated_at}</span>
             </div>
-            {showMenu && (
+            {showMenu && selectedChatId === chat.id && (
               <ChatContextMenue
                 // handleEdit={handleEdit}
                 handleDelete={() => handleDelete(chat.id)}
