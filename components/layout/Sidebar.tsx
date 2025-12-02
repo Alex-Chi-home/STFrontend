@@ -3,11 +3,9 @@ import Image from "next/image";
 import {
   ExitIcon,
   FaceIcon,
-  ImageIcon,
   Cross2Icon,
 } from "@radix-ui/react-icons";
 import { useUserStore } from "@/lib/store/user";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAdminStore } from "@/lib/store/admin";
@@ -15,7 +13,7 @@ import { useAdminStore } from "@/lib/store/admin";
 export default function Sidebar() {
   const { user, logout } = useUserStore();
   const { setSidebarIsOpen, sidebarIsOpen } = useAdminStore();
-  const [isOpen, setIsOpen] = useState(true);
+
   const pathname = usePathname();
 
   function onClose() {

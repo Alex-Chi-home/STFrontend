@@ -16,15 +16,16 @@ import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
 import { useWebSocketStore } from "@/lib/websocket/store";
 import { useAdminStore } from "@/lib/store/admin";
+import { useChatStore } from "@/lib/store/chats";
 
 function ChatContent() {
   const { user } = useUserStore();
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [activeChatId, setActiveChatId] = useState<number | null>(null);
 
   const { mobileChatIsOpen, setMobileChatIsOpen } = useAdminStore();
+  const {activeChatId, setActiveChatId } = useChatStore();
 
   const { incrementUnread, setCurrentChatId } = useWebSocketStore();
 
@@ -58,7 +59,7 @@ function ChatContent() {
       return [...prev, chat];
     });
     setActiveChatId(chat.id);
-  }, []);
+  }, [setActiveChatId]);
 
   const handleChatDeleted = useCallback(
     (payload: { chatId: number }) => {
@@ -68,7 +69,7 @@ function ChatContent() {
         setMessages([]);
       }
     },
-    [activeChatId]
+    [activeChatId, setActiveChatId]
   );
 
   useMessageEvents(handleNewMessage, handleMessageDeleted);

@@ -2,10 +2,12 @@
 import { HamburgerMenuIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
 import ConnectionStatus from "../ui/ConnectionStatus";
 import { useAdminStore } from "@/lib/store/admin";
+import { useChatStore } from "@/lib/store/chats";
 
 export default function Header() {
   
   const { setSidebarIsOpen, mobileChatIsOpen, setMobileChatIsOpen } = useAdminStore();
+  const { setActiveChatId } = useChatStore();
 
   function setSidebar() {
     setSidebarIsOpen(true)
@@ -13,6 +15,7 @@ export default function Header() {
 
   function setMobileChat() {
     setMobileChatIsOpen(true)
+    setActiveChatId(null)
   }
 
   return (

@@ -1,5 +1,4 @@
 "use client";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { useRef, useState, useEffect } from "react";
 import MessageBubble from "./MessageBubble/MessageBubble";
 import MessageInput from "./MessageInput";
