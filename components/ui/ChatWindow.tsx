@@ -14,7 +14,6 @@ interface ChatWindowProps {
   messages: Message[];
   setNewMessage: (text: string, id: number | null) => void;
   handleDeleteMessage: (id: number | null) => void;
-  onMBBack: () => void;
 }
 
 export default function ChatWindow({
@@ -23,7 +22,6 @@ export default function ChatWindow({
   messages = [],
   setNewMessage,
   handleDeleteMessage,
-  onMBBack,
   activeChat
 }: ChatWindowProps) {
   const [message, setMessage] = useState<Message>({ id: null, content: "" });
@@ -78,14 +76,6 @@ export default function ChatWindow({
           onTyping={handleTyping}
           ref={TextInputRef}
         />
-        <div className="sm:hidden">
-          <button
-            onClick={onMBBack}
-            className="absolute left-4 -top-14 flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-100 hover:scale-105 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-          >
-            <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
-          </button>
-        </div>
       </div>}
     </div>
   );

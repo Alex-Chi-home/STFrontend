@@ -56,7 +56,7 @@ export default function ChatList({
   }, []);
 
   return (
-    <div className="w-80 bg-gray-50 border-r border-gray-200 h-[100dvh] sm:h-full flex flex-col relative">
+    <div className="w-100 bg-gray-50 border-r border-gray-200 h-[100dvh] sm:h-full flex flex-col relative">
       <div
         className="flex-1 overflow-y-auto"
         style={{
@@ -106,7 +106,7 @@ export default function ChatList({
         ))}
       </div>
 
-      <div className="absolute bottom-6 right-6 z-10">
+      <div className="absolute bottom-20 right-10 z-10">
         <div className="relative group">
           <button
             onClick={onAddNewChat}

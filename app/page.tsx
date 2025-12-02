@@ -15,14 +15,17 @@ import NewChatModal from "@/components/ui/NewChatModal";
 import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
 import { useWebSocketStore } from "@/lib/websocket/store";
+import { useAdminStore } from "@/lib/store/admin";
 
 function ChatContent() {
   const { user } = useUserStore();
-  const [mbIsSelected, setMbIsSelected] = useState(false);
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeChatId, setActiveChatId] = useState<number | null>(null);
+
+  const { mobileChatIsOpen, setMobileChatIsOpen } = useAdminStore();
+
   const { incrementUnread, setCurrentChatId } = useWebSocketStore();
 
   // WebSocket event handlers
@@ -151,18 +154,14 @@ function ChatContent() {
     }
   }, [activeChatId]);
 
-  function onMbBack() {
-    setMbIsSelected(true);
-  }
-
   function onSetActiveChat(activeChat: number) {
-    setMbIsSelected(false);
+    setMobileChatIsOpen(false);
     setActiveChatId(activeChat);
   }
 
   return (
     <div className="flex h-full">
-      <div className={`${mbIsSelected ? "block" : "hidden"} sm:block`}>
+      <div className={`${mobileChatIsOpen ? "block" : "hidden"} sm:block`}>
         <ChatList
           chats={chats}
           activeChat={activeChatId}
@@ -171,7 +170,7 @@ function ChatContent() {
         />
       </div>
 
-      {!mbIsSelected ? (
+      {!mobileChatIsOpen ? (
         <ChatWindow
           activeChat={activeChatId}
           userId={user?.id || null}
@@ -179,7 +178,6 @@ function ChatContent() {
           messages={messages}
           setNewMessage={setNewMessage}
           handleDeleteMessage={handleDeleteMessage}
-          onMBBack={onMbBack}
         />
       ) : null}
 
