@@ -10,25 +10,27 @@ import { useUserStore } from "@/lib/store/user";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useAdminStore } from "@/lib/store/admin";
 
 export default function Sidebar() {
   const { user, logout } = useUserStore();
+  const { setSidebarIsOpen, sidebarIsOpen } = useAdminStore();
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
 
   function onClose() {
-    setIsOpen(false);
+    setSidebarIsOpen(false)
   }
 
   const navItems = [
     { name: "Chats", icon: FaceIcon, path: "/" },
-    { name: "Profile", icon: ImageIcon, path: "/profile" },
+    // { name: "Profile", icon: ImageIcon, path: "/profile" },
   ];
 
   return (
     <>
       {/* Mobile overlay */}
-      {isOpen && (
+      {sidebarIsOpen && (
         <div
           className="fixed inset-0 bg-gray-700 opacity-75 transition-opacity sm:hidden z-40 overflow-hidden"
           onClick={onClose}
@@ -39,7 +41,7 @@ export default function Sidebar() {
       <div
         className={`
         fixed sm:static inset-y-0 left-0 transform 
-        ${isOpen ? "translate-x-0" : "-translate-x-full"} 
+        ${sidebarIsOpen ? "translate-x-0" : "-translate-x-full"} 
         sm:translate-x-0 transition-transform duration-300 ease-in-out
         w-80 min-w-48 bg-gray-100 border-r border-gray-200 flex-col z-50
         flex overflow-y-auto max-h-screen
@@ -81,6 +83,7 @@ export default function Sidebar() {
                     className={`flex items-center p-2 rounded cursor-pointer
                       ${isActive ? "bg-gray-300" : "hover:bg-gray-200"}
                     `}
+                    
                   >
                     <item.icon className="w-5 h-5 mr-2" />
                     <span>{item.name}</span>
