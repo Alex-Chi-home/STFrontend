@@ -20,7 +20,6 @@ export const registerUserAPI = async (
       toast.success(`User created !`);
       return response.data.user;
     }
-    toast.error(`Error: ${response.message}`);
     return null;
   } catch (error) {
     toast(`Error: ${error}`);
@@ -38,7 +37,6 @@ export const loginUserAPI = async (
       toast.success("user successfully logged in");
       return response.data.user;
     }
-    toast.error(`Error: ${response.message}`);
     return null;
   } catch (error) {
     toast(`Error: ${error}`);
@@ -52,10 +50,10 @@ export const getUserAPI = async (): Promise<User | null> => {
     if (response.ok) {
       return response.data;
     }
-    toast.error(`Error: ${response.message}`);
+
     return null;
   } catch (error) {
-    toast(`Error: ${error}`);
+    toast.error(`Error: ${error}`);
     return null;
   }
 };
