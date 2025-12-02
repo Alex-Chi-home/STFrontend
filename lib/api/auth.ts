@@ -44,6 +44,20 @@ export const loginUserAPI = async (
   }
 };
 
+export const logoutUserAPI = async () => {
+  try {
+    const response = await POST(ApiEndpoints.LOGOUT_USER);
+    if (response.ok) {
+      toast.success("user successfully logged out");
+      return response.data.user;
+    }
+    return null;
+  } catch (error) {
+    toast(`Error: ${error}`);
+    return null;
+  }
+};
+
 export const getUserAPI = async (): Promise<User | null> => {
   try {
     const response = await GET(ApiEndpoints.USER);

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { userStorageHelper } from "../utils";
 import { User } from "../types";
+import { logoutUserAPI } from "../api/auth";
 
 interface UserStore {
   user: User | null;
@@ -29,6 +30,7 @@ export const useUserStore = create<UserStore>((set) => {
       return set({ user });
     },
     logout: () => {
+      logoutUserAPI();
       userStorageHelper.removeUser();
       return set({
         user: {

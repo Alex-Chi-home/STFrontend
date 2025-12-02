@@ -66,7 +66,6 @@ class WebSocketService {
   private setStatus(status: ConnectionStatus): void {
     this._status = status;
     this.statusListeners.forEach((listener) => listener(status));
-    wsLog(`Status: ${status}`);
   }
 
   public onStatusChange(
@@ -84,7 +83,6 @@ class WebSocketService {
     console.log(`[WS] Token: ${token ? token.slice(0, 20) + "..." : "NULL"}`);
 
     if (this.socket?.connected) {
-      wsLog("Already connected");
       return;
     }
 
@@ -124,8 +122,7 @@ class WebSocketService {
       this.setStatus("disconnected");
     });
 
-    this.socket.io.on("reconnect_attempt", (attempt) => {
-      wsLog(`🔄 Reconnecting... Attempt: ${attempt}`);
+    this.socket.io.on("reconnect_attempt", () => {
       this.setStatus("reconnecting");
     });
 
@@ -148,7 +145,6 @@ class WebSocketService {
 
     Object.values(ServerEvents).forEach((event) => {
       this.socket?.on(event as keyof ServerToClientEvents, (data: unknown) => {
-        wsLog(`📨 ${event}:`, data);
         this.emit(event, data);
       });
     });
@@ -163,7 +159,6 @@ class WebSocketService {
     this.typingTimeouts.forEach((timeout) => clearTimeout(timeout));
     this.typingTimeouts.clear();
     this.setStatus("disconnected");
-    wsLog("Disconnected and cleaned up");
   }
 
   public isConnected(): boolean {
@@ -195,16 +190,13 @@ class WebSocketService {
 
   public joinChat(chatId: number): void {
     if (!this.socket?.connected) {
-      wsLog(`Cannot join chat ${chatId} - not connected`);
       return;
     }
     if (this.joinedChats.has(chatId)) {
-      wsLog(`Already joined chat: ${chatId}`);
       return;
     }
     this.socket.emit(ClientEvents.JOIN_CHAT, chatId);
     this.joinedChats.add(chatId);
-    wsLog(`Joined chat: ${chatId}`);
   }
 
   public leaveChat(chatId: number): void {
@@ -214,7 +206,6 @@ class WebSocketService {
     this.socket.emit(ClientEvents.LEAVE_CHAT, chatId);
     this.joinedChats.delete(chatId);
     this.stopTyping(chatId);
-    wsLog(`Left chat: ${chatId}`);
   }
 
   public startTyping(chatId: number): void {
@@ -226,7 +217,6 @@ class WebSocketService {
     } else {
       const payload: TypingPayload = { chatId };
       this.socket.emit(ClientEvents.TYPING_START, payload);
-      wsLog(`Started typing in chat: ${chatId}`);
     }
 
     const timeout = setTimeout(() => {
@@ -244,7 +234,6 @@ class WebSocketService {
       if (this.socket?.connected) {
         const payload: TypingPayload = { chatId };
         this.socket.emit(ClientEvents.TYPING_STOP, payload);
-        wsLog(`Stopped typing in chat: ${chatId}`);
       }
     }
   }
@@ -254,7 +243,6 @@ class WebSocketService {
 
     const payload: MessageReadPayload = { messageId, chatId };
     this.socket.emit(ClientEvents.MESSAGE_READ, payload);
-    wsLog(`Marked message ${messageId} as read`);
   }
 
   public getSocket(): Socket<
