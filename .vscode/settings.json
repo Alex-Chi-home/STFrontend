@@ -43,6 +43,17 @@
   },
 
   // ESLint settings
+  "eslint.enable": true,
+  "eslint.run": "onType",
+  "eslint.useESLintClass": true,
+  "eslint.nodePath": "./node_modules",
+  "eslint.packageManager": "pnpm",
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "eslint.validate": [
     "javascript",
     "javascriptreact",
@@ -50,6 +61,8 @@
     "typescriptreact"
   ],
   "eslint.format.enable": false,
+  "eslint.useFlatConfig": true,
+  "eslint.debug": true,
 
   // Code actions on save
   "editor.codeActionsOnSave": {
