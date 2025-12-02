@@ -53,7 +53,7 @@ export const logoutUserAPI = async () => {
     }
     return null;
   } catch (error) {
-    toast(`Error: ${error}`);
+    console.error(`Error: ${error}`);
     return null;
   }
 };
