@@ -4,7 +4,6 @@ import { create } from "zustand";
 import { ConnectionStatus, TypingState } from "./types";
 
 interface WebSocketStoreState {
-
   status: ConnectionStatus;
   setStatus: (status: ConnectionStatus) => void;
 
@@ -131,4 +130,3 @@ export const useWebSocketStore = create<WebSocketStoreState>((set) => ({
 
   reset: () => set(initialState),
 }));
-

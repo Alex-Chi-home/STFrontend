@@ -43,7 +43,6 @@ export default function WebSocketProvider({
   );
 }
 
-
 export function useAuthToken(): string | null {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +54,10 @@ export function useAuthToken(): string | null {
       try {
         console.log("[WebSocket Auth] Fetching token...");
         const tokenValue = await getWebSocketTokenAction();
-        console.log("[WebSocket Auth] Token received:", tokenValue ? `${tokenValue.slice(0, 20)}...` : "null");
+        console.log(
+          "[WebSocket Auth] Token received:",
+          tokenValue ? `${tokenValue.slice(0, 20)}...` : "null"
+        );
         if (isMounted) {
           setToken(tokenValue);
           setIsLoading(false);
@@ -82,4 +84,3 @@ export function useAuthToken(): string | null {
 
   return token;
 }
-

@@ -4,7 +4,6 @@ import { GET, POST } from "./client";
 import { ApiEndpoints } from "./api-endpoints";
 import { User } from "../types";
 
-
 export interface RegisterUserData {
   username: string;
   password: string;

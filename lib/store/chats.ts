@@ -6,9 +6,8 @@ interface ChatsStore {
 }
 
 export const useChatStore = create<ChatsStore>((set) => {
-
   return {
     activeChatId: null,
-    setActiveChatId: (id: number | null) => set({activeChatId: id}),
+    setActiveChatId: (id: number | null) => set({ activeChatId: id }),
   };
 });

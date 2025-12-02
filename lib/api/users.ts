@@ -18,4 +18,3 @@ export const getUsersAPI = async (): Promise<User[] | []> => {
     return [];
   }
 };
-

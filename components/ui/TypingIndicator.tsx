@@ -7,10 +7,12 @@ interface TypingIndicatorProps {
   userCount?: number;
 }
 
-export default function TypingIndicator({ isTyping, userCount = 1 }: TypingIndicatorProps) {
-  const text = userCount > 1 
-    ? `${userCount} пользователей печатают...` 
-    : "печатает...";
+export default function TypingIndicator({
+  isTyping,
+  userCount = 1,
+}: TypingIndicatorProps) {
+  const text =
+    userCount > 1 ? `${userCount} пользователей печатают...` : "печатает...";
 
   return (
     <AnimatePresence>
@@ -57,4 +59,3 @@ export default function TypingIndicator({ isTyping, userCount = 1 }: TypingIndic
     </AnimatePresence>
   );
 }
-

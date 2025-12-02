@@ -13,7 +13,8 @@ import {
 
 type EventCallback = (...args: unknown[]) => void;
 
-const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:5555";
+const WEBSOCKET_URL =
+  process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:5555";
 
 // Check if debug mode is enabled
 const isDebugEnabled = (): boolean => {
@@ -36,13 +37,13 @@ const wsLog = (message: string, data?: unknown) => {
 
 const wsError = (message: string, error?: unknown) => {
   const ts = new Date().toISOString().slice(11, 23);
-  // eslint-disable-next-line no-console
   console.error(`[WS ${ts}] ❌ ${message}`, error ?? "");
 };
 
 class WebSocketService {
   private static instance: WebSocketService | null = null;
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
+    null;
   private listeners: Map<string, Set<EventCallback>> = new Map();
   private statusListeners: Set<(status: ConnectionStatus) => void> = new Set();
   private _status: ConnectionStatus = "disconnected";
@@ -68,7 +69,9 @@ class WebSocketService {
     wsLog(`Status: ${status}`);
   }
 
-  public onStatusChange(callback: (status: ConnectionStatus) => void): () => void {
+  public onStatusChange(
+    callback: (status: ConnectionStatus) => void
+  ): () => void {
     this.statusListeners.add(callback);
     return () => this.statusListeners.delete(callback);
   }
@@ -132,7 +135,10 @@ class WebSocketService {
     });
 
     this.socket.on("connect_error", (error) => {
-      wsError("Connection error", { message: error.message, cause: error.cause });
+      wsError("Connection error", {
+        message: error.message,
+        cause: error.cause,
+      });
       this.setStatus("disconnected");
     });
   }
@@ -251,7 +257,10 @@ class WebSocketService {
     wsLog(`Marked message ${messageId} as read`);
   }
 
-  public getSocket(): Socket<ServerToClientEvents, ClientToServerEvents> | null {
+  public getSocket(): Socket<
+    ServerToClientEvents,
+    ClientToServerEvents
+  > | null {
     return this.socket;
   }
 }
@@ -259,4 +268,3 @@ class WebSocketService {
 export const websocketService = WebSocketService.getInstance();
 
 export { WebSocketService };
-

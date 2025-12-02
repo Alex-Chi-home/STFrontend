@@ -1,7 +1,10 @@
 import { Chat, Message, User } from "../types";
 
-export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "reconnecting";
-
+export type ConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnecting";
 
 export enum ClientEvents {
   JOIN_CHAT = "join:chat",
@@ -65,7 +68,6 @@ export interface WebSocketMessage extends Message {
   tempId?: number; // For optimistic updates
 }
 
-
 export interface ServerToClientEvents {
   [ServerEvents.MESSAGE_NEW]: (message: Message) => void;
   [ServerEvents.MESSAGE_DELETED]: (payload: MessageDeletedPayload) => void;
@@ -73,7 +75,9 @@ export interface ServerToClientEvents {
   [ServerEvents.CHAT_DELETED]: (payload: ChatDeletedPayload) => void;
   [ServerEvents.USER_TYPING]: (payload: UserTypingPayload) => void;
   [ServerEvents.USER_STOPPED_TYPING]: (payload: UserTypingPayload) => void;
-  [ServerEvents.MESSAGE_READ_STATUS]: (payload: MessageReadStatusPayload) => void;
+  [ServerEvents.MESSAGE_READ_STATUS]: (
+    payload: MessageReadStatusPayload
+  ) => void;
   [ServerEvents.JOINED_CHAT]: (payload: JoinedChatPayload) => void;
   [ServerEvents.LEFT_CHAT]: (payload: LeftChatPayload) => void;
 }
@@ -93,11 +97,9 @@ export interface TypingState {
   };
 }
 
-
 export interface WebSocketState {
   status: ConnectionStatus;
   currentChatId: number | null;
   typingUsers: TypingState;
   joinedChats: Set<number>;
 }
-

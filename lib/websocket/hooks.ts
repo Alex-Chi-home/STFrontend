@@ -6,13 +6,11 @@ import { useWebSocketStore } from "./store";
 import { ServerEvents, ConnectionStatus, UserTypingPayload } from "./types";
 import { Chat, Message } from "../types";
 
-
 export function useWebSocketConnection(token: string | null) {
   const { status, setStatus } = useWebSocketStore();
   const hasConnectedRef = useRef(false);
 
   useEffect(() => {
-
     if (!token) {
       if (hasConnectedRef.current) {
         websocketService.disconnect();
@@ -21,9 +19,11 @@ export function useWebSocketConnection(token: string | null) {
       return;
     }
 
-    const unsubscribe = websocketService.onStatusChange((newStatus: ConnectionStatus) => {
-      setStatus(newStatus);
-    });
+    const unsubscribe = websocketService.onStatusChange(
+      (newStatus: ConnectionStatus) => {
+        setStatus(newStatus);
+      }
+    );
 
     websocketService.connect(token);
     hasConnectedRef.current = true;
@@ -51,7 +51,6 @@ export function useWebSocketConnection(token: string | null) {
   };
 }
 
-
 export function useChatRoom(chatId: number | null) {
   const prevChatIdRef = useRef<number | null>(null);
 
@@ -73,7 +72,6 @@ export function useChatRoom(chatId: number | null) {
     };
   }, [chatId]);
 }
-
 
 export function useTypingIndicator(chatId: number | null) {
   const { typingUsers, addTypingUser, removeTypingUser } = useWebSocketStore();
@@ -108,7 +106,10 @@ export function useTypingIndicator(chatId: number | null) {
       }
     };
 
-    const unsubTyping = websocketService.on(ServerEvents.USER_TYPING, handleUserTyping as () => void);
+    const unsubTyping = websocketService.on(
+      ServerEvents.USER_TYPING,
+      handleUserTyping as () => void
+    );
     const unsubStoppedTyping = websocketService.on(
       ServerEvents.USER_STOPPED_TYPING,
       handleUserStoppedTyping as () => void
@@ -124,7 +125,8 @@ export function useTypingIndicator(chatId: number | null) {
   }, [chatId, addTypingUser, removeTypingUser]);
 
   // Get typing users for current chat
-  const currentTypingUsers = chatId !== null ? typingUsers[chatId]?.userIds || [] : [];
+  const currentTypingUsers =
+    chatId !== null ? typingUsers[chatId]?.userIds || [] : [];
 
   return {
     typingUserIds: currentTypingUsers,
@@ -143,13 +145,19 @@ export function useMessageEvents(
 
     if (onNewMessage) {
       unsubscribers.push(
-        websocketService.on(ServerEvents.MESSAGE_NEW, onNewMessage as () => void)
+        websocketService.on(
+          ServerEvents.MESSAGE_NEW,
+          onNewMessage as () => void
+        )
       );
     }
 
     if (onMessageDeleted) {
       unsubscribers.push(
-        websocketService.on(ServerEvents.MESSAGE_DELETED, onMessageDeleted as () => void)
+        websocketService.on(
+          ServerEvents.MESSAGE_DELETED,
+          onMessageDeleted as () => void
+        )
       );
     }
 
@@ -158,7 +166,6 @@ export function useMessageEvents(
     };
   }, [onNewMessage, onMessageDeleted]);
 }
-
 
 export function useChatEvents(
   onNewChat?: (chat: Chat) => void,
@@ -175,7 +182,10 @@ export function useChatEvents(
 
     if (onChatDeleted) {
       unsubscribers.push(
-        websocketService.on(ServerEvents.CHAT_DELETED, onChatDeleted as () => void)
+        websocketService.on(
+          ServerEvents.CHAT_DELETED,
+          onChatDeleted as () => void
+        )
       );
     }
 
@@ -192,4 +202,3 @@ export function useMessageReadStatus() {
 
   return { markAsRead };
 }
-

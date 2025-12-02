@@ -1,10 +1,6 @@
 "use client";
 import Image from "next/image";
-import {
-  ExitIcon,
-  FaceIcon,
-  Cross2Icon,
-} from "@radix-ui/react-icons";
+import { ExitIcon, FaceIcon, Cross2Icon } from "@radix-ui/react-icons";
 import { useUserStore } from "@/lib/store/user";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -17,7 +13,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   function onClose() {
-    setSidebarIsOpen(false)
+    setSidebarIsOpen(false);
   }
 
   const navItems = [
@@ -81,7 +77,6 @@ export default function Sidebar() {
                     className={`flex items-center p-2 rounded cursor-pointer
                       ${isActive ? "bg-gray-300" : "hover:bg-gray-200"}
                     `}
-                    
                   >
                     <item.icon className="w-5 h-5 mr-2" />
                     <span>{item.name}</span>

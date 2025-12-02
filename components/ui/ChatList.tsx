@@ -35,31 +35,35 @@ export default function ChatList({
   }
 
   // Desktop: right-click
-  const handleRightClick = (e: React.MouseEvent<HTMLDivElement>, chatId: number) => {
+  const handleRightClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    chatId: number
+  ) => {
     e.preventDefault();
     setPosition({ x: e.clientX, y: e.clientY - 10 });
     setSelectedChatId(chatId);
     setShowMenu(true);
   };
 
-  // Mobile: long press start
-  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>, chatId: number) => {
-    isLongPress.current = false;
-    const touch = e.touches[0];
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>, chatId: number) => {
+      isLongPress.current = false;
+      const touch = e.touches[0];
 
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      setPosition({ x: touch.clientX, y: touch.clientY - 10 });
-      setSelectedChatId(chatId);
-      setShowMenu(true);
-      // Вибрация на iOS/Android если поддерживается
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-    }, LONG_PRESS_DURATION);
-  }, []);
+      longPressTimer.current = setTimeout(() => {
+        isLongPress.current = true;
+        setPosition({ x: touch.clientX, y: touch.clientY - 10 });
+        setSelectedChatId(chatId);
+        setShowMenu(true);
 
-  // Mobile: long press end
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+      }, LONG_PRESS_DURATION);
+    },
+    []
+  );
+
   const handleTouchEnd = useCallback(() => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
@@ -67,7 +71,6 @@ export default function ChatList({
     }
   }, []);
 
-  // Mobile: cancel on move (prevents triggering while scrolling)
   const handleTouchMove = useCallback(() => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
@@ -75,15 +78,16 @@ export default function ChatList({
     }
   }, []);
 
-  // Handle click - only trigger if not a long press
-  const handleClick = useCallback((chatId: number) => {
-    if (!isLongPress.current) {
-      setActiveChat(chatId);
-    }
-    isLongPress.current = false;
-  }, [setActiveChat]);
+  const handleClick = useCallback(
+    (chatId: number) => {
+      if (!isLongPress.current) {
+        setActiveChat(chatId);
+      }
+      isLongPress.current = false;
+    },
+    [setActiveChat]
+  );
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: globalThis.MouseEvent | TouchEvent) => {
       if (
@@ -123,7 +127,6 @@ export default function ChatList({
                 ? "bg-blue-500 text-white"
                 : "bg-gray-50 hover:bg-gray-100 cursor-pointer"
             } border-b border-gray-200`}
-            // Desktop: right-click
             onContextMenu={(e) => handleRightClick(e, chat.id)}
             // Mobile: long press
             onTouchStart={(e) => handleTouchStart(e, chat.id)}
@@ -132,9 +135,7 @@ export default function ChatList({
             // Click (but not after long press)
             onClick={() => handleClick(chat.id)}
           >
-            <div
-              className="flex items-center justify-between"
-            >
+            <div className="flex items-center justify-between">
               <div className="flex gap-1">
                 {chat.chat_type === "group" && (
                   <FramerLogoIcon className="w-5 h-5" />

@@ -25,7 +25,7 @@ function ChatContent() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const { mobileChatIsOpen, setMobileChatIsOpen } = useAdminStore();
-  const {activeChatId, setActiveChatId } = useChatStore();
+  const { activeChatId, setActiveChatId } = useChatStore();
 
   const { incrementUnread, setCurrentChatId } = useWebSocketStore();
 
@@ -53,13 +53,16 @@ function ChatContent() {
     [activeChatId]
   );
 
-  const handleNewChat = useCallback((chat: Chat) => {
-    setChats((prev) => {
-      if (prev.some((c) => c.id === chat.id)) return prev;
-      return [...prev, chat];
-    });
-    setActiveChatId(chat.id);
-  }, [setActiveChatId]);
+  const handleNewChat = useCallback(
+    (chat: Chat) => {
+      setChats((prev) => {
+        if (prev.some((c) => c.id === chat.id)) return prev;
+        return [...prev, chat];
+      });
+      setActiveChatId(chat.id);
+    },
+    [setActiveChatId]
+  );
 
   const handleChatDeleted = useCallback(
     (payload: { chatId: number }) => {

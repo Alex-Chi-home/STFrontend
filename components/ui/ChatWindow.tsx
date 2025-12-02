@@ -21,7 +21,7 @@ export default function ChatWindow({
   messages = [],
   setNewMessage,
   handleDeleteMessage,
-  activeChat
+  activeChat,
 }: ChatWindowProps) {
   const [message, setMessage] = useState<Message>({ id: null, content: "" });
   const TextInputRef = useRef<HTMLInputElement>(null);
@@ -63,19 +63,25 @@ export default function ChatWindow({
       {/* Typing indicator */}
       <TypingIndicator isTyping={isTyping} userCount={typingUserIds.length} />
 
-      {!activeChat && <div className="flex items-center justify-center w-full h-full">
-        <h2 className="text-lg font-semibold">Select a chat to start messaging</h2>
-      </div> }
+      {!activeChat && (
+        <div className="flex items-center justify-center w-full h-full">
+          <h2 className="text-lg font-semibold">
+            Select a chat to start messaging
+          </h2>
+        </div>
+      )}
 
-      {activeChat && <div className="sticky bottom-0 bg-white border-t border-gray-200">
-        <MessageInput
-          message={message}
-          setMessage={setMessage}
-          setNewMessage={setNewMessage}
-          onTyping={handleTyping}
-          ref={TextInputRef}
-        />
-      </div>}
+      {activeChat && (
+        <div className="sticky bottom-0 bg-white border-t border-gray-200">
+          <MessageInput
+            message={message}
+            setMessage={setMessage}
+            setNewMessage={setNewMessage}
+            onTyping={handleTyping}
+            ref={TextInputRef}
+          />
+        </div>
+      )}
     </div>
   );
 }
