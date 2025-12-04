@@ -150,7 +150,7 @@ export default function ChatList({
             onClick={() => handleClick(chat.id)}
           >
             <div className="w-full flex items-center justify-between">
-              <div>
+              <div className="flex gap-1">
                 {chat.chat_type === "group" && (
                   <FramerLogoIcon className="w-5 h-5" />
                 )}
