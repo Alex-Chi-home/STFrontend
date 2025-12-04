@@ -9,6 +9,8 @@ export interface Chat {
   id: number;
   name: string | null;
   updated_at: string;
+  created_by: User;
+  members: User[];
 }
 export interface User {
   id: number | null;

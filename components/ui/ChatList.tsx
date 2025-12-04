@@ -5,6 +5,7 @@ import { Chat } from "@/lib/types";
 import { FramerLogoIcon } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState, useCallback } from "react";
 import ChatContextMenue from "./ChatContextMenue";
+import { useUserStore } from "@/lib/store/user";
 
 const LONG_PRESS_DURATION = 500; // ms
 
@@ -22,6 +23,8 @@ export default function ChatList({
   const [showMenu, setShowMenu] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+
+  const { user } = useUserStore();
 
   const menuRef = useRef<HTMLDivElement>(null);
   const chatItemRef = useRef<HTMLDivElement>(null);
@@ -88,6 +91,16 @@ export default function ChatList({
     [setActiveChat]
   );
 
+  function getChatName(chat: Chat) {
+    if (chat.chat_type === "group") {
+      return chat.name;
+    }
+
+    if (user?.id === chat.created_by.id) return chat.members[0].username;
+
+    return chat.created_by.username;
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: globalThis.MouseEvent | TouchEvent) => {
       if (
@@ -140,9 +153,7 @@ export default function ChatList({
                 {chat.chat_type === "group" && (
                   <FramerLogoIcon className="w-5 h-5" />
                 )}
-                <h3 className="text-base font-bold">
-                  {chat.name || "Chat " + chat.id}
-                </h3>
+                <h3 className="text-base font-bold">{getChatName(chat)}</h3>
                 <p
                   className={`text-sm ${
                     activeChat === chat.id ? "text-white" : "text-gray-500"

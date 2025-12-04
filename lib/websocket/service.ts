@@ -76,12 +76,6 @@ class WebSocketService {
   }
 
   public connect(token: string): void {
-    // Always log connection attempts (even in prod)
-    // eslint-disable-next-line no-console
-    console.log(`[WS] Connecting to: ${WEBSOCKET_URL}`);
-    // eslint-disable-next-line no-console
-    console.log(`[WS] Token: ${token ? token.slice(0, 20) + "..." : "NULL"}`);
-
     if (this.socket?.connected) {
       return;
     }
@@ -109,8 +103,6 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on("connect", () => {
-      // eslint-disable-next-line no-console
-      console.log("[WS] ✅ Connected! Socket ID:", this.socket?.id);
       this.setStatus("connected");
       this.joinedChats.forEach((chatId) => {
         this.socket?.emit(ClientEvents.JOIN_CHAT, chatId);
