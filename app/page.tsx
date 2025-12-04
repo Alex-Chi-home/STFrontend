@@ -24,7 +24,7 @@ function ChatContent() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const { mobileChatIsOpen, setMobileChatIsOpen } = useAdminStore();
+  const { mobChatListIsOpen, setMobChatListIsOpen } = useAdminStore();
   const { activeChatId, setActiveChatId } = useChatStore();
 
   const { incrementUnread, setCurrentChatId } = useWebSocketStore();
@@ -159,13 +159,13 @@ function ChatContent() {
   }, [activeChatId]);
 
   function onSetActiveChat(activeChat: number) {
-    setMobileChatIsOpen(false);
+    setMobChatListIsOpen(false);
     setActiveChatId(activeChat);
   }
 
   return (
     <div className="flex h-full">
-      <div className={`${mobileChatIsOpen ? "block" : "hidden"} sm:block`}>
+      <div className={`${mobChatListIsOpen ? "block" : "hidden"} sm:block`}>
         <ChatList
           chats={chats}
           activeChat={activeChatId}
@@ -174,16 +174,15 @@ function ChatContent() {
         />
       </div>
 
-      {!mobileChatIsOpen ? (
+      {
         <ChatWindow
-          activeChat={activeChatId}
           userId={user?.id || null}
           chatId={activeChatId}
           messages={messages}
           setNewMessage={setNewMessage}
           handleDeleteMessage={handleDeleteMessage}
         />
-      ) : null}
+      }
 
       <NewChatModal
         isOpen={isNewChatModalOpen}

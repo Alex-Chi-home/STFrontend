@@ -43,13 +43,17 @@ export default function NewChatModal({
 
   const handleCreateChat = () => {
     const users = [...selectedUsers];
-    if (chatType === "private" && selectedUsers.length !== 1) {
+    if (chatType === ChatType.Private && selectedUsers.length !== 1) {
       return;
     }
-    if (chatType === "group" && (!selectedUsers.length || !groupName)) {
+    if (chatType === ChatType.Group && (!selectedUsers.length || !groupName)) {
       return;
     }
-    onCreateChat(users, chatType, chatType === "group" ? groupName : undefined);
+    onCreateChat(
+      users,
+      chatType,
+      chatType === ChatType.Group ? groupName : undefined
+    );
     resetForm();
   };
 

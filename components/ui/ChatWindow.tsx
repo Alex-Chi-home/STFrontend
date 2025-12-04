@@ -7,7 +7,6 @@ import { Message } from "@/lib/types";
 import { useChatRoom, useTypingIndicator } from "@/lib/websocket/hooks";
 
 interface ChatWindowProps {
-  activeChat: number | null;
   userId: number | null;
   chatId: number | null;
   messages: Message[];
@@ -21,7 +20,6 @@ export default function ChatWindow({
   messages = [],
   setNewMessage,
   handleDeleteMessage,
-  activeChat,
 }: ChatWindowProps) {
   const [message, setMessage] = useState<Message>({ id: null, content: "" });
   const TextInputRef = useRef<HTMLInputElement>(null);
@@ -63,7 +61,7 @@ export default function ChatWindow({
       {/* Typing indicator */}
       <TypingIndicator isTyping={isTyping} userCount={typingUserIds.length} />
 
-      {!activeChat && (
+      {!chatId && (
         <div className="flex items-center justify-center w-full h-full">
           <h2 className="text-lg font-semibold">
             Select a chat to start messaging
@@ -71,7 +69,7 @@ export default function ChatWindow({
         </div>
       )}
 
-      {activeChat && (
+      {chatId && (
         <div className="sticky bottom-0 bg-white border-t border-gray-200">
           <MessageInput
             message={message}

@@ -5,7 +5,7 @@ import { useAdminStore } from "@/lib/store/admin";
 import { useChatStore } from "@/lib/store/chats";
 
 export default function Header() {
-  const { setSidebarIsOpen, mobileChatIsOpen, setMobileChatIsOpen } =
+  const { setSidebarIsOpen, mobChatListIsOpen, setMobChatListIsOpen } =
     useAdminStore();
   const { setActiveChatId } = useChatStore();
 
@@ -14,13 +14,13 @@ export default function Header() {
   }
 
   function setMobileChat() {
-    setMobileChatIsOpen(true);
+    setMobChatListIsOpen(true);
     setActiveChatId(null);
   }
 
   return (
     <div className="h-18 bg-white border-b border-gray-200 flex items-center px-4">
-      {mobileChatIsOpen && (
+      {mobChatListIsOpen && (
         <button
           className="sm:hidden mr-4 p-2 hover:bg-gray-100 rounded-md"
           onClick={setSidebar}
@@ -29,7 +29,7 @@ export default function Header() {
         </button>
       )}
 
-      {!mobileChatIsOpen && (
+      {!mobChatListIsOpen && (
         <button
           className="sm:hidden mr-4 p-2 hover:bg-gray-100 rounded-md"
           onClick={setMobileChat}
