@@ -6,6 +6,7 @@ import { FramerLogoIcon } from "@radix-ui/react-icons";
 import { useEffect, useRef, useState, useCallback } from "react";
 import ChatContextMenue from "./ChatContextMenue";
 import { useUserStore } from "@/lib/store/user";
+import { formatDate } from "@/helpers/formatDate";
 
 const LONG_PRESS_DURATION = 500; // ms
 
@@ -148,8 +149,8 @@ export default function ChatList({
             // Click (but not after long press)
             onClick={() => handleClick(chat.id)}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex gap-1">
+            <div className="w-full flex items-center justify-between">
+              <div>
                 {chat.chat_type === "group" && (
                   <FramerLogoIcon className="w-5 h-5" />
                 )}
@@ -160,7 +161,9 @@ export default function ChatList({
                   } truncate`}
                 ></p>
               </div>
-              <span className="text-xs text-gray-400">{chat.updated_at}</span>
+              <span className="text-xs text-gray-700">
+                {formatDate(chat.updated_at || "")}
+              </span>
             </div>
             {showMenu && selectedChatId === chat.id && (
               <ChatContextMenue
