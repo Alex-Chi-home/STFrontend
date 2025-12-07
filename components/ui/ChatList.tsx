@@ -124,7 +124,7 @@ export default function ChatList({
   }, []);
 
   return (
-    <div className="w-100 bg-gray-50 border-r border-gray-200 h-[100dvh] sm:h-full flex flex-col relative">
+    <div className="w-[100vw] sm:w-[30vw] bg-gray-50 border-r border-gray-200 h-[100dvh] sm:h-full flex flex-col relative">
       <div
         className="flex-1 overflow-y-auto"
         style={{
@@ -146,7 +146,6 @@ export default function ChatList({
             onTouchStart={(e) => handleTouchStart(e, chat.id)}
             onTouchEnd={handleTouchEnd}
             onTouchMove={handleTouchMove}
-            // Click (but not after long press)
             onClick={() => handleClick(chat.id)}
           >
             <div className="w-full flex items-center justify-between">
