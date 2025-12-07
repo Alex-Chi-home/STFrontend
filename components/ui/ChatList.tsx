@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import ChatContextMenue from "./ChatContextMenue";
 import { useUserStore } from "@/lib/store/user";
 import { formatDate } from "@/helpers/formatDate";
+import ChatAvatar from "./ChatAvatar";
 
 const LONG_PRESS_DURATION = 500; // ms
 
@@ -102,6 +103,20 @@ export default function ChatList({
     return chat.created_by.username;
   }
 
+  function getChatPhotoUrl(chat: Chat): string | null {
+    // For group chats, there's no photo URL yet (could be added later)
+    if (chat.chat_type === "group") {
+      return null;
+    }
+
+    // For private chats, get the other user's avatar
+    if (user?.id === chat.created_by.id) {
+      return chat.members[0]?.avatarUrl || null;
+    }
+
+    return chat.created_by?.avatarUrl || null;
+  }
+
   useEffect(() => {
     const handleClickOutside = (event: globalThis.MouseEvent | TouchEvent) => {
       if (
@@ -148,21 +163,44 @@ export default function ChatList({
             onTouchMove={handleTouchMove}
             onClick={() => handleClick(chat.id)}
           >
-            <div className="w-full flex items-center justify-between">
-              <div className="flex gap-1">
-                {chat.chat_type === "group" && (
-                  <FramerLogoIcon className="w-5 h-5" />
-                )}
-                <h3 className="text-base font-bold">{getChatName(chat)}</h3>
-                <p
-                  className={`text-sm ${
-                    activeChat === chat.id ? "text-white" : "text-gray-500"
-                  } truncate`}
-                ></p>
+            <div className="w-full flex items-center gap-3">
+              {/* Avatar */}
+              <ChatAvatar
+                name={getChatName(chat) || "Chat"}
+                photoUrl={getChatPhotoUrl(chat)}
+                chatId={chat.id}
+                size="md"
+              />
+
+              {/* Chat Info */}
+              <div className="flex-1 min-w-0 flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    {chat.chat_type === "group" && (
+                      <FramerLogoIcon className="w-4 h-4 flex-shrink-0" />
+                    )}
+                    <h3 className="text-base font-semibold truncate">
+                      {getChatName(chat)}
+                    </h3>
+                  </div>
+                  <p
+                    className={`text-sm ${
+                      activeChat === chat.id ? "text-white/80" : "text-gray-500"
+                    } truncate`}
+                  >
+                    {/* Last message preview could go here */}
+                  </p>
+                </div>
+
+                {/* Timestamp */}
+                <span
+                  className={`text-xs flex-shrink-0 ml-2 ${
+                    activeChat === chat.id ? "text-white/70" : "text-gray-500"
+                  }`}
+                >
+                  {formatDate(chat.updated_at || "")}
+                </span>
               </div>
-              <span className="text-xs text-gray-700">
-                {formatDate(chat.updated_at || "")}
-              </span>
             </div>
             {showMenu && selectedChatId === chat.id && (
               <ChatContextMenue
