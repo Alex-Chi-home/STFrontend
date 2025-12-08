@@ -15,7 +15,6 @@ import NewChatModal from "@/components/ui/NewChatModal";
 import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
 import { useWebSocketStore } from "@/lib/websocket/store";
-import { useAdminStore } from "@/lib/store/admin";
 import { useChatStore } from "@/lib/store/chats";
 
 function ChatContent() {
@@ -24,7 +23,6 @@ function ChatContent() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const { mobChatListIsOpen, setMobChatListIsOpen } = useAdminStore();
   const { activeChatId, setActiveChatId } = useChatStore();
 
   const { incrementUnread, setCurrentChatId } = useWebSocketStore();
@@ -81,6 +79,18 @@ function ChatContent() {
   useEffect(() => {
     setCurrentChatId(activeChatId);
   }, [activeChatId, setCurrentChatId]);
+
+  useEffect(() => {
+    function extractChatId(hash: string): string {
+      if (hash.startsWith("#chat/")) {
+        return hash.replace("#chat/", "");
+      }
+      return "";
+    }
+    if (!activeChatId && extractChatId(window.location.hash)) {
+      setActiveChatId(+extractChatId(window.location.hash));
+    }
+  }, [activeChatId, setActiveChatId]);
 
   function setNewMessage(content: string) {
     if (!activeChatId) return;
@@ -159,20 +169,17 @@ function ChatContent() {
   }, [activeChatId]);
 
   function onSetActiveChat(activeChat: number) {
-    setMobChatListIsOpen(false);
     setActiveChatId(activeChat);
   }
 
   return (
     <div className="flex h-full">
-      <div className={`${mobChatListIsOpen ? "block" : "hidden"} sm:block`}>
-        <ChatList
-          chats={chats}
-          activeChat={activeChatId}
-          setActiveChat={onSetActiveChat}
-          onAddNewChat={() => setIsNewChatModalOpen(true)}
-        />
-      </div>
+      <ChatList
+        chats={chats}
+        activeChat={activeChatId}
+        setActiveChat={onSetActiveChat}
+        onAddNewChat={() => setIsNewChatModalOpen(true)}
+      />
 
       {
         <ChatWindow

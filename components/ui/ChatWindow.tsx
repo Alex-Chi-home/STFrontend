@@ -42,7 +42,9 @@ export default function ChatWindow({
   }, [messages]);
 
   return (
-    <div className="flex-1 flex flex-col h-full max-h-screen relative">
+    <div
+      className={`sm:flex ${chatId ? "flex" : "hidden"} flex-1 flex-col h-full max-h-screen relative`}
+    >
       <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-4">
           {messages.map((msg) => (
@@ -70,7 +72,7 @@ export default function ChatWindow({
       )}
 
       {chatId && (
-        <div className="sticky bottom-0 bg-white border-t border-gray-200">
+        <div className="sticky bottom-0 bg-white">
           <MessageInput
             message={message}
             setMessage={setMessage}

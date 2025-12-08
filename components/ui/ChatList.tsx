@@ -83,7 +83,7 @@ export default function ChatList({
     }
   }, []);
 
-  const handleClick = useCallback(
+  const onChatClick = useCallback(
     (chatId: number) => {
       if (!isLongPress.current) {
         setActiveChat(chatId);
@@ -139,7 +139,9 @@ export default function ChatList({
   }, []);
 
   return (
-    <div className="w-[100vw] sm:w-[30vw] bg-gray-50 border-r border-gray-200 h-[100dvh] sm:h-full flex flex-col relative">
+    <div
+      className={`w-full md:w-100 sm:block ${activeChat ? "hidden" : "block"}`}
+    >
       <div
         className="flex-1 overflow-y-auto"
         style={{
@@ -161,10 +163,9 @@ export default function ChatList({
             onTouchStart={(e) => handleTouchStart(e, chat.id)}
             onTouchEnd={handleTouchEnd}
             onTouchMove={handleTouchMove}
-            onClick={() => handleClick(chat.id)}
+            onClick={() => onChatClick(chat.id)}
           >
             <div className="w-full flex items-center gap-3">
-              {/* Avatar */}
               <ChatAvatar
                 name={getChatName(chat) || "Chat"}
                 photoUrl={getChatPhotoUrl(chat)}
@@ -214,7 +215,7 @@ export default function ChatList({
         ))}
       </div>
 
-      <div className="absolute bottom-20 right-10 z-10">
+      <div className="mt-5 ml-[80%]">
         <div className="relative group">
           <button
             onClick={onAddNewChat}
