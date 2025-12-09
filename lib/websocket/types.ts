@@ -8,6 +8,7 @@ export type ConnectionStatus =
 
 export enum ClientEvents {
   JOIN_CHAT = "join:chat",
+  JOIN_CHATS = "join:chats",
   LEAVE_CHAT = "leave:chat",
   TYPING_START = "typing:start",
   TYPING_STOP = "typing:stop",
@@ -15,6 +16,7 @@ export enum ClientEvents {
 }
 
 export enum ServerEvents {
+  CONNECTION_READY = "connection:ready",
   MESSAGE_NEW = "message:new",
   MESSAGE_DELETED = "message:deleted",
   CHAT_NEW = "chat:new",
@@ -63,12 +65,18 @@ export interface LeftChatPayload {
   chatId: number;
 }
 
+export interface ConnectionReadyPayload {
+  userId: number;
+  socketId: string;
+}
+
 export interface WebSocketMessage extends Message {
   status?: "sending" | "sent" | "delivered" | "read" | "error";
   tempId?: number; // For optimistic updates
 }
 
 export interface ServerToClientEvents {
+  [ServerEvents.CONNECTION_READY]: (payload: ConnectionReadyPayload) => void;
   [ServerEvents.MESSAGE_NEW]: (message: Message) => void;
   [ServerEvents.MESSAGE_DELETED]: (payload: MessageDeletedPayload) => void;
   [ServerEvents.CHAT_NEW]: (chat: Chat) => void;
@@ -84,6 +92,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   [ClientEvents.JOIN_CHAT]: (chatId: number) => void;
+  [ClientEvents.JOIN_CHATS]: (chatIds: number[]) => void;
   [ClientEvents.LEAVE_CHAT]: (chatId: number) => void;
   [ClientEvents.TYPING_START]: (payload: TypingPayload) => void;
   [ClientEvents.TYPING_STOP]: (payload: TypingPayload) => void;
