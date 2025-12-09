@@ -92,9 +92,9 @@ class WebSocketService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      reconnectionAttempts: Infinity, // Бесконечные попытки переподключения
-      timeout: 20000, // Увеличен timeout до 20 секунд для медленных соединений
-      forceNew: false, // Переиспользовать существующее соединение
+      reconnectionAttempts: Infinity,
+      timeout: 20000,
+      forceNew: false,
       autoConnect: true,
     });
 

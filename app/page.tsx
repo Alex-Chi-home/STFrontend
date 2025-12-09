@@ -16,7 +16,6 @@ import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
 import { useWebSocketStore } from "@/lib/websocket/store";
 import { useChatStore } from "@/lib/store/chats";
-import { ConnectionBanner } from "@/components/ui/ConnectionStatus";
 
 function ChatContent() {
   const { user } = useUserStore();
@@ -174,33 +173,30 @@ function ChatContent() {
   }
 
   return (
-    <>
-      <ConnectionBanner />
-      <div className="flex h-full">
-        <ChatList
-          chats={chats}
-          activeChat={activeChatId}
-          setActiveChat={onSetActiveChat}
-          onAddNewChat={() => setIsNewChatModalOpen(true)}
-        />
+    <div className="flex h-full">
+      <ChatList
+        chats={chats}
+        activeChat={activeChatId}
+        setActiveChat={onSetActiveChat}
+        onAddNewChat={() => setIsNewChatModalOpen(true)}
+      />
 
-        {
-          <ChatWindow
-            userId={user?.id || null}
-            chatId={activeChatId}
-            messages={messages}
-            setNewMessage={setNewMessage}
-            handleDeleteMessage={handleDeleteMessage}
-          />
-        }
-
-        <NewChatModal
-          isOpen={isNewChatModalOpen}
-          onClose={() => setIsNewChatModalOpen(false)}
-          onCreateChat={handleCreateChat}
+      {
+        <ChatWindow
+          userId={user?.id || null}
+          chatId={activeChatId}
+          messages={messages}
+          setNewMessage={setNewMessage}
+          handleDeleteMessage={handleDeleteMessage}
         />
-      </div>
-    </>
+      }
+
+      <NewChatModal
+        isOpen={isNewChatModalOpen}
+        onClose={() => setIsNewChatModalOpen(false)}
+        onCreateChat={handleCreateChat}
+      />
+    </div>
   );
 }
 
