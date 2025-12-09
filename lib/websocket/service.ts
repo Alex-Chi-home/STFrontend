@@ -92,7 +92,10 @@ class WebSocketService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: Infinity, // Бесконечные попытки переподключения
+      timeout: 20000, // Увеличен timeout до 20 секунд для медленных соединений
+      forceNew: false, // Переиспользовать существующее соединение
+      autoConnect: true,
     });
 
     this.setupConnectionEvents();
@@ -108,12 +111,40 @@ class WebSocketService {
     });
 
     this.socket.on("disconnect", (reason) => {
-      wsError(`Disconnected - Reason: ${reason}`, {
+      const disconnectReasons: Record<string, string> = {
+        "io server disconnect": "Сервер принудительно отключил клиента",
+        "io client disconnect": "Клиент отключился вручную",
+        "ping timeout":
+          "Сервер не отвечает на ping (возможно проблема с сетью или сервером)",
+        "transport close": "Транспорт закрыт (обрыв соединения)",
+        "transport error": "Ошибка транспорта",
+      };
+
+      const description = disconnectReasons[reason] || "Неизвестная причина";
+
+      wsError(`Disconnected: ${reason}`, {
         reason,
+        description,
         transport: this.socket?.io.engine?.transport?.name,
         timestamp: new Date().toISOString(),
+        willReconnect:
+          reason !== "io server disconnect" &&
+          reason !== "io client disconnect",
       });
+
       this.setStatus("disconnected");
+
+      // Если сервер принудительно отключил, пытаемся переподключиться вручную
+      if (reason === "io server disconnect") {
+        wsLog(
+          "⚠️ Server disconnect detected, attempting manual reconnection..."
+        );
+        setTimeout(() => {
+          if (this.socket && !this.socket.connected) {
+            this.socket.connect();
+          }
+        }, 1000);
+      }
     });
 
     this.socket.io.on("reconnect_attempt", (attemptNumber) => {
@@ -127,9 +158,42 @@ class WebSocketService {
     });
 
     this.socket.on("connect_error", (error) => {
-      wsError("Connection error", {
+      const errorDetails: Record<string, string | undefined> = {
         message: error.message,
-        cause: error.cause,
+        cause: error.cause ? String(error.cause) : undefined,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Определяем тип ошибки для более понятного сообщения
+      if (error.message === "timeout") {
+        errorDetails.description =
+          "Превышено время ожидания подключения (возможно медленная сеть или сервер недоступен)";
+        errorDetails.suggestion =
+          "Проверьте подключение к интернету и доступность сервера";
+      } else if (error.message.includes("websocket")) {
+        errorDetails.description = "Ошибка WebSocket соединения";
+        errorDetails.suggestion = "Попробуйте обновить страницу";
+      } else if (error.message.includes("xhr poll error")) {
+        errorDetails.description = "Ошибка polling транспорта";
+        errorDetails.suggestion = "Проверьте настройки CORS на сервере";
+      }
+
+      wsError("Connection error", errorDetails);
+      this.setStatus("disconnected");
+    });
+
+    // Добавляем обработчик ошибок переподключения
+    this.socket.io.on("reconnect_error", (error) => {
+      wsError("Reconnection error", {
+        message: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    // Добавляем обработчик неудачного переподключения
+    this.socket.io.on("reconnect_failed", () => {
+      wsError("Reconnection failed after all attempts", {
+        timestamp: new Date().toISOString(),
       });
       this.setStatus("disconnected");
     });
