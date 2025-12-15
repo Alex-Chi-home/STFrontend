@@ -1,6 +1,6 @@
 "use client";
 import { toast } from "react-toastify";
-import { GET, POST } from "./client";
+import { POST } from "./client";
 import { ApiEndpoints } from "./api-endpoints";
 import { User } from "../types";
 
@@ -23,51 +23,6 @@ export const registerUserAPI = async (
     return null;
   } catch (error) {
     toast(`Error: ${error}`);
-    return null;
-  }
-};
-
-export const loginUserAPI = async (
-  payload: RegisterUserData
-): Promise<User | null> => {
-  try {
-    const response = await POST(ApiEndpoints.LOGIN_USER, payload);
-
-    if (response.ok) {
-      toast.success("user successfully logged in");
-      return response.data.user;
-    }
-    return null;
-  } catch (error) {
-    toast(`Error: ${error}`);
-    return null;
-  }
-};
-
-export const logoutUserAPI = async () => {
-  try {
-    const response = await POST(ApiEndpoints.LOGOUT_USER);
-    if (response.ok) {
-      toast.success("user successfully logged out");
-      return response.data.user;
-    }
-    return null;
-  } catch (error) {
-    console.error(`Error: ${error}`);
-    return null;
-  }
-};
-
-export const getUserAPI = async (): Promise<User | null> => {
-  try {
-    const response = await GET(ApiEndpoints.USER);
-    if (response.ok) {
-      return response.data;
-    }
-
-    return null;
-  } catch (error) {
-    toast.error(`Error: ${error}`);
     return null;
   }
 };

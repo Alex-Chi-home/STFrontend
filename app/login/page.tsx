@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useUserStore } from "@/lib/store/user";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { loginSchema, registerSchema } from "@/lib/models";
-import { loginUserAPI, registerUserAPI } from "@/lib/api/auth";
-import { User } from "@/lib/types";
 
 interface FormErrors {
   email?: string;
@@ -32,7 +29,6 @@ export default function AuthPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { setUser } = useUserStore();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,28 +65,6 @@ export default function AuthPage() {
     }
 
     try {
-      // throw Error("error error");
-      const payload = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-      };
-      const user = isLogin
-        ? await loginUserAPI(payload)
-        : await registerUserAPI(payload);
-
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      const userData: User = {
-        id: user?.id || null,
-        username: user?.username,
-        email: user.email,
-      };
-
-      setUser(userData);
       setIsSuccess(true);
     } catch {
       setIsLoading(false);

@@ -1,20 +1,13 @@
 "use client";
 
-import { deleteGroupChatAPI } from "@/lib/api/chats";
 import { Chat } from "@/lib/types";
 import { FramerLogoIcon } from "@radix-ui/react-icons";
-import { useEffect, useRef, useState, useCallback } from "react";
-import ChatContextMenue from "./ChatContextMenue";
-import { useUserStore } from "@/lib/store/user";
 import { formatDate } from "@/helpers/formatDate";
 import ChatAvatar from "./ChatAvatar";
-
-const LONG_PRESS_DURATION = 500; // ms
 
 export default function ChatList({
   chats = [],
   activeChat,
-  setActiveChat,
   onAddNewChat,
 }: {
   chats: Chat[];
@@ -22,122 +15,6 @@ export default function ChatList({
   setActiveChat: (activeChat: number) => void;
   onAddNewChat: () => void;
 }) {
-  const [showMenu, setShowMenu] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
-
-  const { user } = useUserStore();
-
-  const menuRef = useRef<HTMLDivElement>(null);
-  const chatItemRef = useRef<HTMLDivElement>(null);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const isLongPress = useRef(false);
-
-  function handleDelete(chatId: number) {
-    deleteGroupChatAPI(`${chatId}`);
-    setShowMenu(false);
-    setSelectedChatId(null);
-  }
-
-  // Desktop: right-click
-  const handleRightClick = (
-    e: React.MouseEvent<HTMLDivElement>,
-    chatId: number
-  ) => {
-    e.preventDefault();
-    setPosition({ x: e.clientX, y: e.clientY - 10 });
-    setSelectedChatId(chatId);
-    setShowMenu(true);
-  };
-
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent<HTMLDivElement>, chatId: number) => {
-      isLongPress.current = false;
-      const touch = e.touches[0];
-
-      longPressTimer.current = setTimeout(() => {
-        isLongPress.current = true;
-        setPosition({ x: touch.clientX, y: touch.clientY - 10 });
-        setSelectedChatId(chatId);
-        setShowMenu(true);
-
-        if (navigator.vibrate) {
-          navigator.vibrate(50);
-        }
-      }, LONG_PRESS_DURATION);
-    },
-    []
-  );
-
-  const handleTouchEnd = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
-  const handleTouchMove = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
-  const onChatClick = useCallback(
-    (chatId: number) => {
-      if (!isLongPress.current) {
-        setActiveChat(chatId);
-      }
-      isLongPress.current = false;
-    },
-    [setActiveChat]
-  );
-
-  function getChatName(chat: Chat) {
-    if (chat.chat_type === "group") {
-      return chat.name;
-    }
-
-    if (user?.id === chat.created_by.id) return chat.members[0].username;
-
-    return chat.created_by.username;
-  }
-
-  function getChatPhotoUrl(chat: Chat): string | null {
-    // For group chats, there's no photo URL yet (could be added later)
-    if (chat.chat_type === "group") {
-      return null;
-    }
-
-    // For private chats, get the other user's avatar
-    if (user?.id === chat.created_by.id) {
-      return chat.members[0]?.avatarUrl || null;
-    }
-
-    return chat.created_by?.avatarUrl || null;
-  }
-
-  useEffect(() => {
-    const handleClickOutside = (event: globalThis.MouseEvent | TouchEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        chatItemRef.current &&
-        !chatItemRef.current.contains(event.target as Node)
-      ) {
-        setShowMenu(false);
-        setSelectedChatId(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, []);
-
   return (
     <div
       className={`w-full md:w-100 sm:block ${activeChat ? "hidden" : "block"}`}
@@ -152,23 +29,16 @@ export default function ChatList({
         {chats.map((chat) => (
           <div
             key={chat.id}
-            ref={chatItemRef}
             className={`p-4 flex ${
               activeChat === chat.id
                 ? "bg-blue-500 text-white"
                 : "bg-gray-50 hover:bg-gray-100 cursor-pointer"
             } border-b border-gray-200`}
-            onContextMenu={(e) => handleRightClick(e, chat.id)}
-            // Mobile: long press
-            onTouchStart={(e) => handleTouchStart(e, chat.id)}
-            onTouchEnd={handleTouchEnd}
-            onTouchMove={handleTouchMove}
-            onClick={() => onChatClick(chat.id)}
           >
             <div className="w-full flex items-center gap-3">
               <ChatAvatar
-                name={getChatName(chat) || "Chat"}
-                photoUrl={getChatPhotoUrl(chat)}
+                name={"Chat"}
+                photoUrl={null}
                 chatId={chat.id}
                 size="md"
               />
@@ -181,7 +51,7 @@ export default function ChatList({
                       <FramerLogoIcon className="w-4 h-4 flex-shrink-0" />
                     )}
                     <h3 className="text-base font-semibold truncate">
-                      {getChatName(chat)}
+                      Chat name
                     </h3>
                   </div>
                   <p
@@ -203,14 +73,6 @@ export default function ChatList({
                 </span>
               </div>
             </div>
-            {showMenu && selectedChatId === chat.id && (
-              <ChatContextMenue
-                // handleEdit={handleEdit}
-                handleDelete={() => handleDelete(chat.id)}
-                menuRef={menuRef}
-                position={position}
-              />
-            )}
           </div>
         ))}
       </div>

@@ -1,13 +1,10 @@
 "use client";
-import Image from "next/image";
 import { ExitIcon, FaceIcon, Cross2Icon } from "@radix-ui/react-icons";
-import { useUserStore } from "@/lib/store/user";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAdminStore } from "@/lib/store/admin";
 
 export default function Sidebar() {
-  const { user, logout } = useUserStore();
   const { setSidebarIsOpen, sidebarIsOpen } = useAdminStore();
 
   const pathname = usePathname();
@@ -16,10 +13,7 @@ export default function Sidebar() {
     setSidebarIsOpen(false);
   }
 
-  const navItems = [
-    { name: "Chats", icon: FaceIcon, path: "/" },
-    // { name: "Profile", icon: ImageIcon, path: "/profile" },
-  ];
+  const navItems = [{ name: "Chats", icon: FaceIcon, path: "/" }];
 
   return (
     <>
@@ -34,8 +28,8 @@ export default function Sidebar() {
       {/* Sidebar */}
       <div
         className={`
-        fixed sm:static inset-y-0 left-0 transform 
-        ${sidebarIsOpen ? "translate-x-0" : "-translate-x-full"} 
+        fixed sm:static inset-y-0 left-0 transform
+        ${sidebarIsOpen ? "translate-x-0" : "-translate-x-full"}
         sm:translate-x-0 transition-transform duration-300 ease-in-out
         w-80 min-w-48 bg-gray-100 border-r border-gray-200 flex-col z-50
         flex overflow-y-auto max-h-screen
@@ -43,21 +37,7 @@ export default function Sidebar() {
       >
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Image
-                src="/dogs.svg"
-                alt="User Avatar"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <div>
-                <h2 className="text-lg font-semibold">{user?.username}</h2>
-                <p className="text-sm text-gray-500">
-                  {user ? "Online" : "Offline"}
-                </p>
-              </div>
-            </div>
+            <div className="flex items-center space-x-3">avatar</div>
             <button
               className="sm:hidden p-2 hover:bg-gray-200 rounded-full"
               onClick={onClose}
@@ -84,10 +64,7 @@ export default function Sidebar() {
                 </li>
               );
             })}
-            <li
-              className="flex items-center p-2 hover:bg-gray-200 rounded cursor-pointer text-red-600"
-              onClick={logout}
-            >
+            <li className="flex items-center p-2 hover:bg-gray-200 rounded cursor-pointer text-red-600">
               <ExitIcon className="w-5 h-5 mr-2" />
               <span>Logout</span>
             </li>

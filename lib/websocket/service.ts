@@ -16,25 +16,6 @@ type EventCallback = (...args: unknown[]) => void;
 const WEBSOCKET_URL =
   process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:5555";
 
-// Check if debug mode is enabled
-const isDebugEnabled = (): boolean => {
-  if (typeof window === "undefined") return false;
-  const urlParams = new URLSearchParams(window.location.search);
-  return (
-    localStorage.getItem("ws_debug") === "true" ||
-    urlParams.get("ws_debug") === "true" ||
-    process.env.NODE_ENV === "development"
-  );
-};
-
-// Logger - always log errors, other logs only in debug mode
-const wsLog = (message: string, data?: unknown) => {
-  if (!isDebugEnabled()) return;
-  const ts = new Date().toISOString().slice(11, 23);
-  // eslint-disable-next-line no-console
-  console.log(`[WS ${ts}] ${message}`, data ?? "");
-};
-
 const wsError = (message: string, error?: unknown) => {
   const ts = new Date().toISOString().slice(11, 23);
   console.error(`[WS ${ts}] ❌ ${message}`, error ?? "");
@@ -106,7 +87,6 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on("connect", () => {
-      wsLog("🔌 Socket connected");
       this.setStatus("connected");
     });
 
@@ -119,13 +99,11 @@ class WebSocketService {
       this.setStatus("disconnected");
     });
 
-    this.socket.io.on("reconnect_attempt", (attemptNumber) => {
-      wsLog(`🔄 Reconnection attempt #${attemptNumber}`);
+    this.socket.io.on("reconnect_attempt", () => {
       this.setStatus("reconnecting");
     });
 
-    this.socket.io.on("reconnect", (attemptNumber) => {
-      wsLog(`✅ Reconnected after ${attemptNumber} attempt(s)`);
+    this.socket.io.on("reconnect", () => {
       this.setStatus("connected");
     });
 
@@ -143,13 +121,11 @@ class WebSocketService {
 
     // Handle connection:ready event separately for reconnection logic
     this.socket.on(ServerEvents.CONNECTION_READY, (payload) => {
-      wsLog("🎯 Connection ready", payload);
       this.emit(ServerEvents.CONNECTION_READY, payload);
 
       // Rejoin all previously joined chats after authentication
       if (this.joinedChats.size > 0) {
         const chatIds = Array.from(this.joinedChats);
-        wsLog(`🔄 Rejoining ${chatIds.length} chat(s): ${chatIds.join(", ")}`);
 
         // Use join:chats for multiple chats or join:chat for single chat
         if (chatIds.length > 1) {
@@ -162,13 +138,11 @@ class WebSocketService {
 
     // Handle joined:chat confirmation
     this.socket.on(ServerEvents.JOINED_CHAT, (payload) => {
-      wsLog(`✅ Joined chat room: ${payload.chatId}`);
       this.emit(ServerEvents.JOINED_CHAT, payload);
     });
 
     // Handle left:chat confirmation
     this.socket.on(ServerEvents.LEFT_CHAT, (payload) => {
-      wsLog(`👋 Left chat room: ${payload.chatId}`);
       this.emit(ServerEvents.LEFT_CHAT, payload);
     });
 
@@ -229,23 +203,18 @@ class WebSocketService {
 
   public joinChat(chatId: number): void {
     if (!this.socket?.connected) {
-      wsLog(`⚠️ Cannot join chat ${chatId}: socket not connected`);
-      // Still add to joinedChats so we can rejoin on reconnection
       this.joinedChats.add(chatId);
       return;
     }
     if (this.joinedChats.has(chatId)) {
-      wsLog(`ℹ️ Already in chat ${chatId}`);
       return;
     }
-    wsLog(`📥 Joining chat ${chatId}`);
     this.socket.emit(ClientEvents.JOIN_CHAT, chatId);
     this.joinedChats.add(chatId);
   }
 
   public joinChats(chatIds: number[]): void {
     if (!this.socket?.connected) {
-      wsLog(`⚠️ Cannot join chats: socket not connected`);
       // Still add to joinedChats so we can rejoin on reconnection
       chatIds.forEach((id) => this.joinedChats.add(id));
       return;
@@ -253,29 +222,24 @@ class WebSocketService {
 
     const newChatIds = chatIds.filter((id) => !this.joinedChats.has(id));
     if (newChatIds.length === 0) {
-      wsLog(`ℹ️ Already in all requested chats`);
       return;
     }
 
-    wsLog(`📥 Joining ${newChatIds.length} chat(s): ${newChatIds.join(", ")}`);
     this.socket.emit(ClientEvents.JOIN_CHATS, newChatIds);
     newChatIds.forEach((id) => this.joinedChats.add(id));
   }
 
   public leaveChat(chatId: number): void {
     if (!this.socket?.connected) {
-      wsLog(`⚠️ Cannot leave chat ${chatId}: socket not connected`);
       // Still remove from joinedChats
       this.joinedChats.delete(chatId);
       this.stopTyping(chatId);
       return;
     }
     if (!this.joinedChats.has(chatId)) {
-      wsLog(`ℹ️ Not in chat ${chatId}`);
       return;
     }
 
-    wsLog(`📤 Leaving chat ${chatId}`);
     this.socket.emit(ClientEvents.LEAVE_CHAT, chatId);
     this.joinedChats.delete(chatId);
     this.stopTyping(chatId);
