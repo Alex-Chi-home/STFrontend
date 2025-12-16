@@ -8,7 +8,6 @@ import { getMessagesAPI } from "@/lib/api/messages";
 import NewChatModal from "@/components/ui/NewChatModal";
 import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
-import { useWebSocketStore } from "@/lib/websocket/store";
 import { useChatStore } from "@/lib/store/chats";
 
 function ChatContent() {
@@ -18,8 +17,6 @@ function ChatContent() {
 
   const { activeChatId, setActiveChatId } = useChatStore();
 
-  const { incrementUnread, setCurrentChatId } = useWebSocketStore();
-
   // WebSocket event handlers
   const handleNewMessage = useCallback(
     (message: Message) => {
@@ -28,11 +25,9 @@ function ChatContent() {
           if (prev.some((m) => m.id === message.id)) return prev;
           return [...prev, message];
         });
-      } else if (message.chat_id) {
-        incrementUnread(message.chat_id);
       }
     },
-    [activeChatId, incrementUnread]
+    [activeChatId]
   );
 
   const handleMessageDeleted = useCallback(
@@ -68,10 +63,6 @@ function ChatContent() {
 
   useMessageEvents(handleNewMessage, handleMessageDeleted);
   useChatEvents(handleNewChat, handleChatDeleted);
-
-  useEffect(() => {
-    setCurrentChatId(activeChatId);
-  }, [activeChatId, setCurrentChatId]);
 
   useEffect(() => {
     function extractChatId(hash: string): string {
