@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { getUsersAPI } from "@/lib/api/users";
 import { ChatType, User } from "@/lib/types";
+import { useUserStore } from "@/lib/store/user";
 
 interface NewChatModalProps {
   isOpen: boolean;
@@ -21,25 +21,17 @@ export default function NewChatModal({
   onCreateChat,
 }: NewChatModalProps) {
   const [chatType, setChatType] = useState<ChatType>(ChatType.Private);
-  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [groupName, setGroupName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { users: availableUsers } = useUserStore();
 
   const filteredUsers = availableUsers.filter(
     (user) =>
       user?.username?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !selectedUsers.some((selected) => selected.id === user.id)
   );
-
-  useEffect(() => {
-    async function getUsers() {
-      const users = await getUsersAPI();
-
-      setAvailableUsers(users);
-    }
-    getUsers();
-  }, []);
 
   const handleCreateChat = () => {
     const users = [...selectedUsers];

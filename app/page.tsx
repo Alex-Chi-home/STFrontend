@@ -16,9 +16,10 @@ import WebSocketProvider, { useAuthToken } from "@/providers/WebSocketProvider";
 import { useMessageEvents, useChatEvents } from "@/lib/websocket/hooks";
 import { useWebSocketStore } from "@/lib/websocket/store";
 import { useChatStore } from "@/lib/store/chats";
+import { getUsersAPI } from "@/lib/api/users";
 
 function ChatContent() {
-  const { user } = useUserStore();
+  const { user, setUsers } = useUserStore();
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,6 +27,16 @@ function ChatContent() {
   const { activeChatId, setActiveChatId } = useChatStore();
 
   const { incrementUnread, setCurrentChatId } = useWebSocketStore();
+
+  useEffect(() => {
+    async function getUsers() {
+      const usersData = await getUsersAPI();
+      setUsers(usersData);
+    }
+    if (!false) {
+      getUsers();
+    }
+  }, [setUsers]);
 
   // WebSocket event handlers
   const handleNewMessage = useCallback(

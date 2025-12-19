@@ -1,18 +1,25 @@
 "use client";
 
+import { useUserStore } from "@/lib/store/user";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TypingIndicatorProps {
   isTyping: boolean;
   userCount?: number;
+  userIds: number[];
 }
 
 export default function TypingIndicator({
   isTyping,
   userCount = 1,
+  userIds = [],
 }: TypingIndicatorProps) {
-  const text =
-    userCount > 1 ? `${userCount} пользователей печатают...` : "печатает...";
+  const { users } = useUserStore();
+
+  const names = users
+    .filter((user) => userIds.some((id) => user.id === id))
+    .map((el) => el.username);
+  const text = `${names.join(" ")} is typing (${userCount})`;
 
   return (
     <AnimatePresence>

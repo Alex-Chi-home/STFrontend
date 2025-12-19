@@ -30,7 +30,6 @@ export default function ChatWindow({
 
   // WebSocket
   const { typingUserIds, isTyping, handleTyping } = useTypingIndicator(chatId);
-
   const onEdit = (editMessage: Message) => {
     TextInputRef.current?.focus();
     setMessage({ id: editMessage.id, content: editMessage.content });
@@ -61,7 +60,11 @@ export default function ChatWindow({
       </div>
 
       {/* Typing indicator */}
-      <TypingIndicator isTyping={isTyping} userCount={typingUserIds.length} />
+      <TypingIndicator
+        isTyping={isTyping}
+        userCount={typingUserIds.length}
+        userIds={typingUserIds}
+      />
 
       {!chatId && (
         <div className="flex items-center justify-center w-full h-full">

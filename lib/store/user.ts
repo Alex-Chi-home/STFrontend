@@ -5,7 +5,9 @@ import { logoutUserAPI } from "../api/auth";
 
 interface UserStore {
   user: User | null;
+  users: User[];
   setUser: (user: User | null) => void;
+  setUsers: (users: User[] | []) => void;
   logout: () => void;
 }
 
@@ -18,6 +20,7 @@ export const useUserStore = create<UserStore>((set) => {
 
   return {
     user: defaultUser,
+    users: [],
     setUser: (user) => {
       if (user) {
         userStorageHelper.setUser({
@@ -28,6 +31,9 @@ export const useUserStore = create<UserStore>((set) => {
       }
 
       return set({ user });
+    },
+    setUsers: (users) => {
+      return set({ users });
     },
     logout: () => {
       logoutUserAPI();
